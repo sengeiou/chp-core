@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.fortune.dao.BilldayCfgDao" >
+
+  	<resultMap id="BaseResultMap" type="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+  		<id column="settle_month" property="settleMonth" jdbcType="INTEGER" />
+	    <id column="settle_day" property="settleDay" jdbcType="INTEGER" />
+	    <result column="year" property="year" jdbcType="INTEGER" />
+	    <result column="settle_date" property="settleDate" jdbcType="DATE" />
+	    <result column="bill_month" property="billMonth" jdbcType="INTEGER" />
+	    <result column="bill_day" property="billDay" jdbcType="INTEGER" />
+	    <result column="bill_date" property="billDate" jdbcType="DATE" />
+	    <result column="lend_code" property="lendCode" jdbcType="VARCHAR" />
+  	</resultMap>
+  	
+  	<sql id="Base_Column_List" >
+    	year, 
+    	settle_month, 
+    	settle_day, 
+    	settle_date,
+    	bill_month,
+    	bill_day,
+    	bill_date,
+    	lend_code
+  	</sql>
+  	
+  	<!-- 检索结算日账单日配置 -->
+  	<select id="selBilldayCfg" resultMap="BaseResultMap" parameterType="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+    	select 
+    		<include refid="Base_Column_List" />
+    	from 
+    		gl.t_gl_billday_cfg
+    	<where>
+      		<if test="settleMonth != null" >
+        		and settle_month = #{settleMonth,jdbcType=VARCHAR}
+      		</if>
+    	    <if test="settleDay != null" >
+        		and settle_day = #{settleDay,jdbcType=VARCHAR}
+      		</if>
+    	</where>
+  	</select>
+  	
+  	
+  	
+  	
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String" >
+    delete from gl.t_gl_billday_cfg
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  
+  <insert id="insert" parameterType="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+    insert into gl.t_gl_billday_cfg (year, month, 
+      settle_day, bill_day)
+    values (#{year,jdbcType=INTEGER}, #{month,jdbcType=INTEGER}, 
+      #{settleDay,jdbcType=INTEGER}, #{billDay,jdbcType=INTEGER})
+  </insert>
+  
+  <insert id="insertSelective" parameterType="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+    insert into gl.t_gl_billday_cfg
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="year != null" >
+        year,
+      </if>
+      <if test="month != null" >
+        month,
+      </if>
+      <if test="settleDay != null" >
+        settle_day,
+      </if>
+      <if test="billDay != null" >
+        bill_day,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="year != null" >
+        #{year,jdbcType=INTEGER},
+      </if>
+      <if test="month != null" >
+        #{month,jdbcType=INTEGER},
+      </if>
+      <if test="settleDay != null" >
+        #{settleDay,jdbcType=INTEGER},
+      </if>
+      <if test="billDay != null" >
+        #{billDay,jdbcType=INTEGER},
+      </if>
+    </trim>
+  </insert>
+  
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+    update gl.t_gl_billday_cfg
+    <set >
+      <if test="year != null" >
+        year = #{year,jdbcType=INTEGER},
+      </if>
+      <if test="month != null" >
+        month = #{month,jdbcType=INTEGER},
+      </if>
+      <if test="settleDay != null" >
+        settle_day = #{settleDay,jdbcType=INTEGER},
+      </if>
+      <if test="billDay != null" >
+        bill_day = #{billDay,jdbcType=INTEGER},
+      </if>
+    </set>
+  </update>
+  
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.core.fortune.entity.BilldayCfgEntity" >
+    update gl.t_gl_billday_cfg
+    set year = #{year,jdbcType=INTEGER},
+      month = #{month,jdbcType=INTEGER},
+      settle_day = #{settleDay,jdbcType=INTEGER},
+      bill_day = #{billDay,jdbcType=INTEGER}
+  </update>
+</mapper>

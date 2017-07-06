@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.common.dao.EntrustDao" >
+
+  <resultMap id="BaseResultMap" type="com.creditharmony.core.common.entity.Entrust" >
+    <result column="id" property="id" jdbcType="VARCHAR" />
+    <result column="loan_code" property="loanCode" jdbcType="VARCHAR" />
+    <result column="entrust_user_code" property="entrustUserCode" jdbcType="VARCHAR" />
+    <result column="entrust_accept_user_code" property="entrustAcceptUserCode" jdbcType="VARCHAR" />
+    <result column="entrust_msg" property="entrustMsg" jdbcType="VARCHAR" />
+    <result column="approve_status" property="validFlag" jdbcType="VARCHAR" />
+    <result column="entrust_starttime" property="entrustStartTime" jdbcType="TIMESTAMP" />
+    <result column="entrust_endtime" property="entrustEndTime" jdbcType="TIMESTAMP" />
+    <result column="create_by" property="createBy" jdbcType="VARCHAR" />
+    <result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+    <result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+    <result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+  </resultMap>
+ 
+  <sql id="Base_Column_List" >
+  	id, loan_code, entrust_user_code, entrust_accept_user_code, entrust_msg, approve_status, 
+  	entrust_starttime, entrust_endtime, create_by, create_time, modify_by, modify_time
+  </sql>
+	
+  <select id="searchEntrust" resultMap="BaseResultMap" parameterType="java.util.Date">
+	 select
+	 <include refid="Base_Column_List" />
+	 from gl.t_gl_entrust
+	 where approve_status !='1' and entrust_starttime &lt;= #{0} and entrust_endtime> #{0}
+	 order by entrust_endtime 		
+  </select>
+  
+  <sql id="Join_Columns" >
+  	loan_code, entrust_user_code, entrust_accept_user_code, entrust_msg, approve_status, 
+  	entrust_starttime, entrust_endtime
+  </sql>  
+
+	<select id="findListByParams"  resultType="com.creditharmony.core.common.entity.ex.EntrustEx" parameterType="java.util.Map">
+		select en.id , loan_code, entrust_user_code, entrust_accept_user_code, entrust_msg, approve_status as validFlag, entrust_starttime, 
+			entrust_endtime, a.name as "entrustUserName",  b.name as "entrustAcceptUserName"
+		from gl.t_gl_entrust en 
+		left join gl.t_gl_user a on a.id=en.entrust_user_code 
+		left join gl.t_gl_user b on b.id=en.entrust_accept_user_code
+		join gl.t_gl_org o on o.id = a.department_id
+		where entrust_endtime>now()  
+		<if test="entrustUserName != null and entrustUserName != ''">
+			and a.name = #{entrustUserName}
+		</if>
+		<if test="entrustAcceptUserName != null and entrustAcceptUserName != ''">
+			and b.name = #{entrustAcceptUserName} 
+		</if>
+		<if test="departmentId != null and departmentId != ''">
+			AND (o.id = #{departmentId} OR o.parent_ids LIKE CONCAT('%,', #{departmentId}, '%'))
+		</if>
+		order by entrust_endtime desc nulls last
+	</select>
+
+	<select id="getByPrimaryId" resultType="com.creditharmony.core.common.entity.ex.EntrustEx" parameterType="java.lang.String">
+		select en.id, 			
+  			<include refid="Join_Columns" />,
+			a.name as "entrustUserName", b.name as "entrustAcceptUserName",
+			r.name as roleType
+		from gl.t_gl_entrust en 
+		left join gl.t_gl_user a on a.id=en.entrust_user_code 
+		left join gl.t_gl_user b on b.id=en.entrust_accept_user_code
+		left join gl.t_gl_user_role_org uro on en.entrust_user_code = uro.user_id
+		left join gl.t_gl_role r on uro.role_id = r.id
+		where en.id= #{0} 
+	</select>
+	
+	<select id="getByPrimaryIdNew" resultType="com.creditharmony.core.common.entity.ex.EntrustEx" parameterType="java.lang.String">
+		select en.id, 			
+  			<include refid="Join_Columns" />,
+			a.name as "entrustUserName", b.name as "entrustAcceptUserName"
+		from gl.t_gl_entrust en 
+		left join gl.t_gl_user a on a.id=en.entrust_user_code 
+		left join gl.t_gl_user b on b.id=en.entrust_accept_user_code
+		where en.id= #{0} 
+	</select>
+
+	<select id="findByUserCode" resultMap="BaseResultMap" parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from gl.t_gl_entrust
+		where entrust_user_code = #{entrustUserCode} and entrust_end_time> now() and approve_status=#{validFlag}
+	</select>	
+    
+  <insert id="insertEntrust" parameterType="com.creditharmony.core.common.entity.ex.EntrustEx" >
+    insert into gl.t_gl_entrust (id, loan_code, entrust_user_code, 
+      entrust_accept_user_code, entrust_msg, approve_status, 
+      entrust_starttime, entrust_endtime, create_by, 
+      create_time, modify_by, modify_time
+      )
+    values (#{id,jdbcType=VARCHAR}, #{loanCode,jdbcType=VARCHAR}, #{entrustUserCode,jdbcType=VARCHAR}, 
+      #{entrustAcceptUserCode,jdbcType=VARCHAR}, #{entrustMsg,jdbcType=VARCHAR}, #{validFlag,jdbcType=VARCHAR}, 
+      #{entrustStartTime,jdbcType=TIMESTAMP}, #{entrustEndTime,jdbcType=TIMESTAMP}, #{createBy,jdbcType=VARCHAR}, 
+      #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}
+      )
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.core.common.entity.ex.EntrustEx" >
+    insert into gl.t_gl_entrust
+    <trim prefix="(" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        id,
+      </if>
+      <if test="loanCode != null" >
+        loan_code,
+      </if>
+      <if test="entrustUserCode != null" >
+        entrust_user_code,
+      </if>
+      <if test="entrustAcceptUserCode != null" >
+        entrust_accept_user_code,
+      </if>
+      <if test="entrustMsg != null" >
+        entrust_msg,
+      </if>
+      <if test="validFlag != null" >
+        approve_status,
+      </if>
+      <if test="entrustStartTime != null" >
+        entrust_starttime,
+      </if>
+      <if test="entrustEndTime != null" >
+        entrust_endtime,
+      </if>
+      <if test="createBy != null" >
+        create_by,
+      </if>
+      <if test="createTime != null" >
+        create_time,
+      </if>
+      <if test="modifyBy != null" >
+        modify_by,
+      </if>
+      <if test="modifyTime != null" >
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides="," >
+      <if test="id != null" >
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loanCode != null" >
+        #{loanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="entrustUserCode != null" >
+        #{entrustUserCode,jdbcType=VARCHAR},
+      </if>
+      <if test="entrustAcceptUserCode != null" >
+        #{entrustAcceptUserCode,jdbcType=VARCHAR},
+      </if>
+      <if test="entrustMsg != null" >
+        #{entrustMsg,jdbcType=VARCHAR},
+      </if>
+      <if test="validFlag != null" >
+        #{validFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="entrustStartTime != null" >
+        #{entrustStartTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="entrustEndTime != null" >
+        #{entrustEndTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="createBy != null" >
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null" >
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null" >
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null" >
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+
+    <update id="updateSelective" parameterType="com.creditharmony.core.common.entity.ex.EntrustEx" >
+    update gl.t_gl_entrust
+    set 
+      loan_code = #{loanCode,jdbcType=VARCHAR},
+      entrust_user_code = #{entrustUserCode,jdbcType=VARCHAR},
+      entrust_accept_user_code = #{entrustAcceptUserCode,jdbcType=VARCHAR},
+      entrust_msg = #{entrustMsg,jdbcType=VARCHAR},
+      approve_status = #{validFlag,jdbcType=VARCHAR},
+      entrust_starttime = #{entrustStartTime,jdbcType=TIMESTAMP},
+      entrust_endtime = #{entrustEndTime,jdbcType=TIMESTAMP},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+
+	<delete id="deleteByPrimaryId" parameterType="java.lang.String">
+		delete from gl.t_gl_entrust
+		where id = #{0}
+	</delete>
+	
+	<update id="updateValid"  parameterType="com.creditharmony.core.common.entity.ex.EntrustEx">
+	update gl.t_gl_entrust
+    set 
+      approve_status = #{validFlag,jdbcType=VARCHAR},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+	</update>
+	
+	  <select id="selectUserByParams"  resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.User">
+		select id,name from gl.t_gl_user 
+		where 1=1 
+		<if test="companyId != null and companyId != ''">
+			and company_id = #{companyId}
+		</if>
+		<if test="delFlag != null and delFlag != ''">
+			and del_flag = #{delFlag} 
+		</if>
+	</select>
+		
+	<select id="selectOtherByPrevUser"  resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">		
+		select distinct a.* 
+			from gl.t_gl_user a 
+			join gl.t_gl_org o on o.id = a.department_id 
+			LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id
+			where a.id in   (
+				select 
+					uro.user_id 
+				from gl.t_gl_user_role_org uro 
+				join gl.t_gl_user_role_org u_ro on u_ro.role_id = uro.role_id 
+				where uro.user_id &lt;&gt; #{exceptUserId} and u_ro.user_id= #{exceptUserId})
+			and a.status = '1' and a.has_login = '1'
+		<if test="checkLevel != null and checkLevel != ''">
+			and a.level = #{checkLevel,jdbcType=INTEGER} 
+		</if>
+		<if test="delFlag != null and delFlag != ''">
+			and a.del_flag = #{delFlag} 
+		</if>	
+		<if test="departmentId != null and departmentId != ''">
+			AND (o.id = #{departmentId} OR o.parent_ids LIKE CONCAT('%,', #{departmentId}, '%'))
+		</if>
+		<if test="parentIds != null and parentIds != ''">
+			and o.parent_ids like #{parentIds}||'%'
+		</if>
+		<if test="loginUser != null and loginUser != ''">
+			and a.id &lt;&gt; #{loginUser}
+		</if>	
+	</select>
+	
+	<select id="selectUserByRole"  resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">
+		select distinct a.* 
+			from gl.t_gl_user a 
+			join gl.t_gl_org o on o.id = a.department_id 
+			LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id
+			where a.id in (
+				select 
+					uro.user_id 
+				from gl.t_gl_user_role_org uro 
+				join gl.t_gl_user us on us.department_id = uro.org_id and uro.user_id = us.id
+				join gl.t_gl_role role on role.id=uro.role_id )
+			and a.status = '1' and a.has_login = '1'
+		<if test="delFlag != null and delFlag != ''">
+			and a.del_flag = #{delFlag} 
+		</if>
+		<if test="departmentId != null and departmentId != ''">
+			AND (o.id = #{departmentId} OR o.parent_ids LIKE CONCAT('%,', #{departmentId,jdbcType=VARCHAR}, '%'))
+		</if>
+		<if test="parentIds != null and parentIds != ''">
+			and o.parent_ids like #{parentIds,jdbcType=VARCHAR}||'%'
+		</if>
+		<if test="loginUser != null and loginUser != ''">
+			and a.id &lt;&gt; #{loginUser}
+		</if>			
+	</select>
+	
+	<select id="selectUserNames" resultType="com.creditharmony.core.users.entity.User">  
+    	select distinct id,name from gl.t_gl_user where id in 
+		<foreach item="item" index="index" collection="list" open="(" separator="," close=")"> 
+			#{item}
+		</foreach> 
+	</select>  	
+	
+	<select id="getCurrenUserInfo" resultType="com.creditharmony.core.common.entity.ex.EntrustEx" parameterType="java.util.Map">  
+    	select u.department_id as departmentId,
+    		   u.level as level,
+    		   role.name as roleType
+    		from gl.t_gl_user u
+    		join gl.t_gl_user_role_org uro on uro.user_id = u.id
+			join gl.t_gl_role role on role.id=uro.role_id
+    	where u.id = #{exceptUserId} limit 1;
+	</select>
+
+</mapper>

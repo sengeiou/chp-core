@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.report.dao.RoleDataRangeDao">
+
+	<resultMap id="RoleDataRangeMap" type="com.creditharmony.core.report.entity.RoleDataRange">
+        <id column="role_id" property="roleId" jdbcType="VARCHAR" />
+        <result column="org_ids" property="orgIds" jdbcType="VARCHAR"/>
+        <result column="org_type" property="orgType" jdbcType="VARCHAR"/>
+        <result column="is_export" property="isExport" jdbcType="VARCHAR"/>
+        <result column="field1" property="field1" jdbcType="VARCHAR"/>
+        <result column="field2" property="field2" jdbcType="VARCHAR"/>
+        <result column="field3" property="field3" jdbcType="VARCHAR"/>
+        <result column="create_by" property="createBy" jdbcType="VARCHAR"/>  
+        <result column="create_time" property="createTime" jdbcType="VARCHAR"/>
+        <result column="modify_by" property="modifyBy" jdbcType="VARCHAR"/>
+        <result column="modify_time" property="modifyTime" jdbcType="VARCHAR"/>  
+    </resultMap>
+	
+	<sql id="Base_Column_List">
+       role_id,org_ids,org_type,is_export,field1,field2,field3,create_by,create_time,modify_by,modify_time
+    </sql>
+	
+	<select id="findByRoleId" resultMap="RoleDataRangeMap" parameterType="string">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gl.t_gl_role_data_range
+        WHERE role_id = #{roleId,jdbcType=VARCHAR}
+    </select>
+</mapper>

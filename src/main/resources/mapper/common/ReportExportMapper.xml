@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.report.dao.ReportExportDao">
+
+	<resultMap id="ReportExportMap" type="com.creditharmony.core.report.entity.ReportExport">
+		<id column="org_id" property="orgId" jdbcType="VARCHAR" />
+		<id column="role_id" property="roleId" jdbcType="VARCHAR" />
+        <id column="rpt_id" property="reportId" jdbcType="VARCHAR" />
+		<result column="btn_indexes" property="buttonIndexs" jdbcType="VARCHAR" />
+    </resultMap>
+	
+	<sql id="Base_Column_List">
+       ORG_ID, ROLE_ID, RPT_ID, CAN_EXPORT, BTN_INDEXES, FIELD1, FIELD2, FIELD3
+    </sql>
+	
+    <select id="findByParams" resultType="com.creditharmony.core.report.entity.ReportExport" parameterType="map">
+        SELECT <include refid="Base_Column_List"/>
+        FROM  gl.t_gl_rpt_export a
+        <where>
+            <if test="orgId != null and orgId != ''">
+                AND a.org_id = #{orgId}
+            </if>
+            <if test="roleId != null and roleId != ''">
+                AND a.role_id = #{roleId}
+            </if>
+             <if test="reportId != null and reportId != ''">
+                AND a.rpt_id = #{reportId}
+            </if>
+        </where>
+    </select>
+    
+</mapper>

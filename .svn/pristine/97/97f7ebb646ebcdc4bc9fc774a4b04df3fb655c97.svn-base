@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.cms.dao.ArticlePolicyDataDao">
+    
+	<sql id="cmsArticleDataColumns">
+		a.id AS "id",
+		a.doc_id AS "docId",
+		a.file_path AS "filePath",
+		a.url AS "url",
+		a.file_name AS "fileName"
+	</sql>
+	
+	<sql id="cmsArticleDataJoins">
+	</sql>
+    
+	<select id="get" resultType="com.creditharmony.core.cms.entity.ArticlePolicyData">
+		SELECT 
+			<include refid="cmsArticleDataColumns"/>
+		FROM gl.t_gl_cms_article_policy_data a
+		<include refid="cmsArticleDataJoins"/>
+		WHERE a.id = #{id}
+	</select>
+		
+	<insert id="insert">
+		INSERT INTO gl.t_gl_cms_article_policy_data(
+			id,
+			doc_id,
+			file_path,
+			url,
+			file_name
+		) VALUES (
+			#{id},
+			#{docId},
+			#{filePath},
+			#{url},
+			#{fileName}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_cms_article_policy_data SET 	
+			doc_id = #{docId},
+			file_path = #{filePath},
+			url = #{url},
+			file_name = #{fileName}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

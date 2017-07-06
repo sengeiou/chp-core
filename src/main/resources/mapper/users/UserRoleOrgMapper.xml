@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.users.dao.UserRoleOrgDao" >
+
+	<resultMap id="BaseResultMap" type="com.creditharmony.core.users.entity.UserRoleOrg" >
+		<id column="user_id" property="userId" jdbcType="VARCHAR" />
+		<id column="org_id" property="orgId" jdbcType="VARCHAR" />
+		<id column="role_id" property="roleId" jdbcType="VARCHAR" />
+		<result column="org_name" property="orgName" jdbcType="VARCHAR" />
+		<result column="role_name" property="roleName" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+  
+    <!-- 检索员工关联机构 **************************************************************************** -->
+    <select id="selUserRoleOrg" resultType="com.creditharmony.core.users.entity.UserRoleOrg" parameterType="com.creditharmony.core.users.entity.UserRoleOrg">
+        SELECT 
+            a.user_id, 
+			a.org_id,
+			c.name AS "orgName",
+			c.type AS "orgType",
+			a.role_id,
+			b.name AS "roleName",
+			a.create_by, 
+			a.create_time, 
+			a.modify_by, 
+			a.modify_time 
+        FROM  
+            gl.t_gl_user_role_org a left join gl.t_gl_role b on a.role_id=b.id
+            left join gl.t_gl_org c on a.org_id=c.id
+        <where>
+            <if test="userId != null and userId != ''">
+                a.user_id = #{userId}
+            </if>
+            <if test="orgId != null and orgId != ''">
+                AND a.org_id = #{orgId}
+            </if>
+            <if test="roleId != null and roleId != ''">
+                AND a.role_id = #{roleId}
+            </if>
+            <if test="orgUseable != null and orgUseable != ''">
+                AND c.useable = #{orgUseable}
+            </if>
+        </where>
+    </select>
+    
+    <select id="selUserRoleOrgByUserId" parameterType="com.creditharmony.core.users.entity.UserRoleOrg" resultType="map">
+        SELECT 
+            b.id AS "roleId",
+            b.name AS "roleName",
+            c.id AS "orgId",
+            c.name AS "orgName",
+            c.type AS "orgType"
+        FROM  
+            gl.t_gl_user_role_org a left join gl.t_gl_role b on a.role_id=b.id
+            left join gl.t_gl_org c on a.org_id=c.id
+        <where>
+            <if test="userId != null and userId != ''">
+                a.user_id = #{userId}
+            </if>
+        </where>
+    </select>
+    
+    <!-- 查询用户角色组织机构 -->
+    <select id="query" resultType="com.creditharmony.core.users.entity.UserRoleOrg" parameterType="map">
+        SELECT 
+            a.user_id, 
+			a.org_id,
+			a.role_id,
+			a.create_by, 
+			a.create_time, 
+			a.modify_by, 
+			a.modify_time 
+        FROM  gl.t_gl_user_role_org a
+        <where>
+            <if test="userId != null and userId != ''">
+                a.user_id = #{userId}
+            </if>
+            <if test="orgId != null and orgId != ''">
+                AND a.org_id = #{orgId}
+            </if>
+            <if test="roleId != null and roleId != ''">
+                AND a.role_id = #{roleId}
+            </if>
+            <if test="userIds != null">
+                 AND a.user_id in 
+		        <foreach collection="userIds" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+            </if>
+        </where>
+    </select>
+    
+    <select id="findUsersByRidAndOid" resultType="com.creditharmony.core.users.entity.UserRoleOrg">
+    select a.org_id,a.role_id,a.user_id,b.name AS "userName" from gl.t_gl_user_role_org a join gl.t_gl_user b on a.user_id=b.id  
+    where (a.org_id,a.role_id) in (
+    	<foreach collection="list" item="map" separator=",">
+			(#{map.orgId},#{map.roleId})
+		</foreach>
+		)
+    </select>
+	<select id="checkHaveAuditor" resultType="com.creditharmony.core.users.entity.UserRoleOrg">
+		select guro.* from gl.t_gl_user_role_org guro where guro.org_id in
+		<foreach collection="orgs" item="orgId"  index="index" open="(" separator="," close=")">  
+			'${orgId}' 
+		</foreach>
+		and exists (
+			select 1 from gl.t_gl_role_module_menu grmm where grmm.menu_id =#{menuId,jdbcType=VARCHAR}
+			and
+			grmm.module_id = (
+				select id from gl.t_gl_module where module_key='MODULE_FORTUNE'
+			)
+			and grmm.role_id=guro.role_id
+		)
+		and exists(
+			select 1 from gl.t_gl_user tgu where tgu.status='1' and tgu.del_flag='0' and guro.user_id=tgu.id
+		)
+	</select>
+</mapper>

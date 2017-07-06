@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.UserGesturePsswordDao">
+    
+    <sql id="Base_Column_List" >
+		id,
+		financing_id as financingId,
+		gesture_password as gesturePassword
+    </sql>
+    
+	<insert id="insert">
+		INSERT INTO gl.t_gl_app_gesture_password_info(
+			<include refid="Base_Column_List"/>
+		) VALUES (
+			#{id}, 
+			#{financingId}, 
+			#{gesturePassword}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_app_gesture_password_info SET 
+			gesture_password = #{gesturePassword}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="login" resultType="com.creditharmony.core.users.entity.UserGesturePssword"
+		parameterType="com.creditharmony.core.users.entity.UserGesturePssword">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM gl.t_gl_app_gesture_password_info
+		WHERE financing_id = #{financingId} 
+		<if test="gesturePassword != null and gesturePassword != ''">
+		and gesture_password = #{gesturePassword}
+		</if>
+	</select>
+	
+</mapper>

@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.autoBill.dao.BankBillDao">
+    
+	<select id="findBankBillList" resultType="com.creditharmony.core.autoBill.entity.BankBillInfo" parameterType="map">
+		select * from gl.t_gl_autobill_bank where bill_date between #{startDate} and #{endDate}
+		<if test="bankId!=null and bankId!=''"> and bank_id=#{bankId} </if>
+		<if test="platformId!=null and platformId!=''"> and platform_id=#{platformId} </if>
+		<if test="status!=null and status!=''"> and status=#{status} </if>
+		order by bill_date
+	</select>
+	
+	<select id="findByDate" resultType="com.creditharmony.core.autoBill.entity.BankBillInfo">
+      SELECT id, bill_date, platform_id,balance_amount,bank_id,income_amount,status,
+		(select sum(split_amount)/100::numeric from gl.t_gl_deduct_his_detail where to_char(creat_time,'yyyy-mm-dd')=a.bill_date group by to_char(creat_time,'yyyy-mm-dd')) AS "total_amount"
+	   from gl.t_gl_autobill_bank a where bill_date = #{billDate} and and settlement_status='1' limit 1
+	</select>
+	<select id="findBillDate">
+      select bill_date from gl.t_gl_autobill_bank where bill_date between #{startDate} and #{endDate}
+	</select>
+	
+	<select id="get" resultType="com.creditharmony.core.autoBill.entity.BankBillInfo">
+		SELECT * from gl.t_gl_autobill_bank WHERE id = #{id}
+	</select>
+	
+	<select id="findByBillDate" resultType="com.creditharmony.core.autoBill.entity.BankBillInfo">
+		SELECT * from gl.t_gl_autobill_bank WHERE bill_date = #{billDate}
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_autobill_bank(id, bill_date, platform_id, total_amount,balance_amount,bank_id,income_amount,status)
+		VALUES(#{id}, #{billDate}, #{platformId}, #{totalAmount}, #{balanceAmount}, #{bankId}, #{incomeAmount},#{status})
+	</insert>
+	
+	<!-- 更新用户信息  -->
+	<update id="update">
+		UPDATE gl.t_gl_autobill_bank SET 
+			total_amount = #{totalAmount},
+			balance_amount = #{balanceAmount}, 
+			income_amount = #{incomeAmount}
+		WHERE id = #{id}
+	</update>
+	<!-- 更新用户信息  -->
+	<update id="updateStatus">
+		UPDATE gl.t_gl_autobill_bank SET 
+			status = #{status}
+		WHERE bill_date in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

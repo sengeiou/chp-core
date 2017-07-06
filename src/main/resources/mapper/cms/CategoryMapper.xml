@@ -1,0 +1,320 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.cms.dao.CategoryDao">
+    
+	<sql id="cmsCategoryDaoColumns">
+		a.id AS "id",
+		a.parent_id AS "parent.id",
+		a.parent_ids AS "parentIds",
+		a.site_id AS "site.id",
+		a.org_id AS "org.id",
+		a.module AS "module",
+		a.name AS "name",
+		a.image AS "image",
+		a.href AS "href",
+		a.target AS "target",
+		a.description AS "description",
+		a.keywords AS "keywords",
+		a.sort AS "sort",
+		a.in_menu AS "inMenu",
+		a.in_list AS "inList",
+		a.show_modes AS "showModes",
+		a.allow_comment AS "allowComment",
+		a.is_audit AS "isAudit",
+		a.custom_list_view AS "customListView",
+		a.custom_content_view AS "customContentView",
+		a.view_config AS "viewConfig",
+		a.create_by AS "createBy",
+		a.create_time AS "createTime",
+		a.modify_by AS "modifyBy",
+		a.modify_time AS "modifyTime",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		c.name AS "parent.name",
+		c.view_config AS "parent.viewConfig",
+		o.name AS "org.name",
+		s.theme AS "site.theme"
+	</sql>
+	
+	<sql id="cmsCategoryDaoJoins">
+	    LEFT JOIN gl.t_gl_cms_category c ON c.id = a.parent_id
+		JOIN gl.t_gl_org o ON o.id = a.org_id
+		JOIN gl.t_gl_user u ON u.id = a.create_by
+		JOIN gl.t_gl_cms_site s ON a.site_id = s.id
+	</sql>
+    
+	<select id="get" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			a.id AS "id",
+			a.parent_id AS "parent.id",
+			a.parent_ids AS "parentIds",
+			a.site_id AS "site.id",
+			a.org_id AS "org.id",
+			a.module AS "module",
+			a.name AS "name",
+			a.image AS "image",
+			a.href AS "href",
+			a.target AS "target",
+			a.description AS "description",
+			a.keywords AS "keywords",
+			a.sort AS "sort",
+			a.in_menu AS "inMenu",
+			a.in_list AS "inList",
+			a.show_modes AS "showModes",
+			a.allow_comment AS "allowComment",
+			a.is_audit AS "isAudit",
+			a.custom_list_view AS "customListView",
+			a.custom_content_view AS "customContentView",
+			a.view_config AS "viewConfig",
+			a.create_by AS "createBy",
+			a.create_time AS "createTime",
+			a.modify_by AS "modifyBy",
+			a.modify_time AS "modifyTime",
+			a.remarks AS "remarks",
+			a.del_flag AS "delFlag",
+			o.name AS "org.name"
+		FROM gl.t_gl_cms_category a
+		JOIN gl.t_gl_org o ON o.id = a.org_id
+		JOIN gl.t_gl_user u ON u.id = a.create_by
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="find" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test="parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.modify_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.cms.entity.Category" parameterType="map">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+		    <if test="delFlag != null and delFlag != ''">
+				AND a.del_flag = #{delFlag}
+			</if>
+			<if test="siteId != null and siteId != ''">
+				AND a.site_id  = #{siteId}
+			</if>
+			<if test="parentId != null and parentId != ''">
+				AND a.parent_id  = #{parentId}
+			</if>
+			<if test="orgIdList != null and orgIdList.size>0">
+				AND a.org_id in 
+				<foreach collection="orgIdList" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>		
+			ORDER BY a.site_id,a.sort ASC
+	</select>
+	
+	<select id="findListByBean" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test=" site.id != null and site.id != ''">
+				AND a.site_id  = #{site.id}
+			</if>
+			<if test="parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+			${sqlMap.dsf}
+		</where>		
+			ORDER BY a.site_id,a.sort ASC
+	</select>
+	
+	<select id="findModule" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+			<if test=" site.id != null and site.id != ''">
+				AND a.site_id  = #{site.id}
+			</if>
+			<if test="parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+			<if test="inMenu != null and inMenu != '' ">
+				AND a.in_menu  = #{inMenu}
+			</if>
+			${sqlMap.dsf}
+		</where>		
+			ORDER BY a.site_id,a.sort ASC
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_cms_category(
+			id,
+			parent_id,
+			parent_ids,
+			site_id,
+			org_id,
+			module,
+			name,
+			image,
+			href,
+			target,
+			description,
+			keywords,
+			sort,
+			in_menu,
+			in_list,
+			show_modes,
+			allow_comment,
+			is_audit,
+			custom_list_view,
+			custom_content_view,
+			view_config,
+			create_by,
+			create_time,
+			modify_by,
+			modify_time,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{parent.id},
+			#{parentIds},
+			#{site.id},
+			#{org.id},
+			#{module},
+			#{name},
+			#{image},
+			#{href},
+			#{target},
+			#{description},
+			#{keywords},
+			#{sort},
+			#{inMenu},
+			#{inList},
+			#{showModes},
+			#{allowComment},
+			#{isAudit},
+			#{customListView},
+			#{customContentView},
+			#{viewConfig},
+			#{createBy},
+			#{createTime},
+			#{modifyBy},
+			#{modifyTime},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_cms_category SET 	
+			parent_id = #{parent.id},
+			parent_ids = #{parentIds},
+			site_id = #{site.id},
+			org_id = #{org.id},
+			module = #{module},
+			name = #{name},
+			image = #{image},
+			href = #{href},
+			target = #{target},
+			description = #{description},
+			keywords = #{keywords},
+			sort = #{sort},
+			in_menu = #{inMenu},
+			in_list = #{inList},
+			show_modes = #{showModes},
+			allow_comment = #{allowComment},
+			is_audit = #{isAudit},
+			custom_list_view = #{customListView},
+			custom_content_view = #{customContentView},
+			view_config = #{viewConfig},
+			modify_by = #{modifyBy},
+			modify_time = #{modifyTime},
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE gl.t_gl_cms_category SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_cms_category SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findByParentIdAndSiteId" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			<if test=" site.id != null and site.id != ''">
+				AND a.site_id  = #{site.id}
+			</if>
+			<if test="parent.id != null and parent.id != ''">
+				AND a.parent_id  = #{parent.id}
+			</if>
+		</where>		
+		order by a.site_id, a.sort
+	</select>
+	<select id="findByParentIdsLike" resultType="com.creditharmony.core.cms.entity.Category">
+		SELECT 
+			<include refid="cmsCategoryDaoColumns"/>
+		FROM gl.t_gl_cms_category a
+		<include refid="cmsCategoryDaoJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND a.parent_id LIKE  '%'||#{id}||'%'
+		</where>		
+		order by a.site_id, a.sort
+	</select>
+	
+	<select id="findStats" resultType="java.util.Map" parameterType="java.util.Map">
+		select max(c.id) as categoryId,
+		       max(c.name) as categoryName,
+		       max(cp.id) as categoryParentId,
+		       max(cp.name) as categoryParentName,
+		       count(*) as cnt,
+		       sum(a.hits) as hits,
+		       max(a.modifyTime) as modifyTime,
+		       max(o.id) as orgId,
+		       max(o.name) as orgName,
+		  from gl.t_gl_cms_article a
+		  JOIN gl.t_gl_cms_category c ON c.id = a.category_id
+		  JOIN gl.t_gl_cms_category cp ON c.parent_id = cp.id
+		  JOIN gl.t_gl_org o ON o.id = c.org_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND a.category_id
+			AND c.site_id =
+			AND c.id = :id or c.parent_ids LIKE CONCAT('%', #{parentIds}, '%')
+			group by cp.sort, cp.id, c.sort, c.id
+			order by cp.sort, cp.id, c.sort, c.id
+		</where>		
+	</select>
+</mapper>

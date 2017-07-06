@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.common.dao.BusinessSeqDao">
+    
+    <resultMap type="com.creditharmony.core.common.entity.BusinessSeq" id="BusinessSeq">
+    	<id column="ID_FLOW_TYPE" property="flowType" jdbcType="VARCHAR"/>
+    	<id column="ID_DAY" property="day" jdbcType="DECIMAL"/>
+    	<result column="N_SEQ" property="seq" jdbcType="DECIMAL"/>
+    </resultMap>
+    
+	<select id="findBusinessSeq" resultType="Integer">
+		SELECT n_seq
+		FROM gl.t_gl_business_seq
+		WHERE ID_FLOW_TYPE = #{flowType,jdbcType=VARCHAR} AND
+			  ID_DAY = #{day,jdbcType=DECIMAL}
+	</select>
+	<insert id="insertBusinessSeq">
+		INSERT INTO gl.t_gl_business_seq(
+			ID_FLOW_TYPE, 
+			ID_DAY, 
+			N_SEQ
+		) VALUES (
+			#{flowType}, 
+			#{day}, 
+			#{seq} 
+		)
+	</insert>
+	<update id="updateBusinessSeq">
+		UPDATE gl.t_gl_business_seq 
+		SET N_SEQ = N_SEQ + 1
+		WHERE ID_FLOW_TYPE = #{flowType,jdbcType=VARCHAR} and ID_DAY = #{day,jdbcType=DECIMAL}
+	</update>
+	
+	<update id="updateSeq">
+		UPDATE gl.t_gl_business_seq 
+		SET N_SEQ = N_SEQ + 1
+		WHERE ID_FLOW_TYPE = #{flowType,jdbcType=VARCHAR} and ID_DAY = #{day,jdbcType=DECIMAL}
+		 and n_seq = #{seq,jdbcType=DECIMAL}
+	</update>
+	
+</mapper>

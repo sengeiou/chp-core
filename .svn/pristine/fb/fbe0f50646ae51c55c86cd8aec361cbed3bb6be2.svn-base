@@ -1,0 +1,110 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.ModuleMenuDao">
+    
+	<sql id="moduleMenuColumns">
+		a.id,
+		a.module_id AS "module.id",
+		a.name,
+		a.menu_key,
+		a.remarks,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		m.name AS "module.name"
+	</sql>
+	
+	<sql id="moduleMenuJoins">
+		JOIN gl.t_gl_module m ON m.id = a.module_id
+    </sql>
+	
+	<select id="get" resultType="com.creditharmony.core.users.entity.ModuleMenu">
+		SELECT
+			<include refid="moduleMenuColumns"/>
+		FROM gl.t_gl_module_menu a
+		<include refid="moduleMenuJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByParams" resultType="com.creditharmony.core.users.entity.ModuleMenu">
+		SELECT
+			<include refid="moduleMenuColumns"/>
+		FROM gl.t_gl_module_menu a
+		WHERE a.menu_key = #{menuKey} AND a.del_flag = #{delFlag}
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.users.entity.ModuleMenu">
+		SELECT
+			<include refid="moduleMenuColumns"/>
+		FROM gl.t_gl_module_menu a
+		<include refid="moduleMenuJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%'</if>
+		<if test="menuKey!=null and menuKey!=''"> and a.menu_key like '%'||#{menuKey}||'%'</if>
+		ORDER BY a.id
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.ModuleMenu">
+		SELECT
+			<include refid="moduleMenuColumns"/>
+		FROM gl.t_gl_module_menu a
+		<include refid="moduleMenuJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.id
+	</select>
+	
+	<select id="findByModuleId" resultType="com.creditharmony.core.users.entity.ModuleMenu" parameterType="java.util.Map">
+		SELECT
+			<include refid="moduleMenuColumns"/>
+		FROM gl.t_gl_module_menu a
+		<include refid="moduleMenuJoins"/>
+		WHERE a.del_flag = #{delFlag}
+		and m.id = #{moduleId}
+		ORDER BY a.id
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_module_menu(
+			id, 
+			module_id,
+			name, 
+			menu_key,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{module.id}, 
+			#{name}, 
+			#{menuKey}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_module_menu SET  
+			name = #{name}, 
+			menu_key = #{menuKey},
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_module_menu SET 
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.WorkflowConfigDao">
+    
+    <sql id="sqlColumns">
+    	a.id,
+		a.workflow_id,
+		b.label AS "workflowName",
+		a.node_id,
+		c.label AS "nodeName",
+		a.max_num,
+		a.total_num,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.system_flag
+    </sql>
+    
+    <sql id="sqlJoins">
+		LEFT JOIN gl.t_gl_dict b ON a.workflow_id = b.id
+		LEFT JOIN gl.t_gl_dict c ON a.node_id = c.id
+    </sql>
+	
+    
+	<select id="get" resultType="com.creditharmony.core.users.entity.WorkflowConfig">
+		SELECT
+			<include refid="sqlColumns"/>
+		FROM gl.t_gl_workflow_conf a
+		   <include refid="sqlJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findWorkflowConfigOne" resultType="com.creditharmony.core.users.entity.WorkflowConfig">
+		SELECT
+			<include refid="sqlColumns"/>
+		FROM gl.t_gl_workflow_conf a
+		   <include refid="sqlJoins"/>
+		WHERE 1=1
+		<if test="workflowId != null and workflowId != ''">
+			and b.label = #{workflowId}
+		</if>
+		<if test="nodeId != null and nodeId != ''">
+			and c.label = #{nodeId}
+		</if>
+	</select>
+	
+	<select id="getWorkflowConfig" resultType="com.creditharmony.core.users.entity.WorkflowConfig" parameterType="com.creditharmony.core.users.entity.WorkflowConfig">
+		SELECT
+			a.id,
+			a.group_id,
+			a.auto_dispatch,
+			a.dispatch_flag,
+			a.total_num,
+			a.max_num
+		FROM gl.t_gl_workflow_conf a
+		WHERE 1=1
+		<if test="dispatchFlag != null and dispatchFlag != ''">
+			and a.dispatch_flag = #{dispatchFlag}
+		</if>
+		<if test="groupId != null and groupId != ''">
+			and group_id = #{groupId}
+		</if>
+		<if test="workflowId != null and workflowId != ''">
+			and a.workflow_id = #{workflowId}
+		</if>
+		<if test="nodeId != null and nodeId != ''">
+			and a.node_id = #{nodeId}
+		</if>
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.users.entity.WorkflowConfig">
+		SELECT
+			<include refid="sqlColumns"/>
+		FROM gl.t_gl_workflow_conf a
+		   <include refid="sqlJoins"/>
+		WHERE 1=1 
+		<if test="systemFlag != null and systemFlag != ''">
+			and a.system_flag = #{systemFlag}
+		</if>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_workflow_conf(
+			id,
+			workflow_id,
+			node_id,
+			max_num,
+			total_num,
+			create_by,
+			create_time,
+			modify_by,
+			modify_time,
+			system_flag,
+			group_id,
+			dispatch_flag,
+			auto_dispatch
+		) VALUES (
+			#{id}, 
+			#{workflowId}, 
+			#{nodeId}, 
+			#{maxNum}, 
+			#{totalNum}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{systemFlag},
+			#{groupId},
+			#{dispatchFlag},
+			#{autoDispatch}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_workflow_conf SET 
+			workflow_id = #{workflowId}, 
+			node_id = #{nodeId}, 
+			max_num = #{maxNum}, 
+			total_num = #{totalNum}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateDispatchInfo" parameterType="com.creditharmony.core.users.entity.WorkflowConfig">
+		UPDATE gl.t_gl_workflow_conf  SET 
+			group_id = #{groupId},
+			auto_dispatch = #{autoDispatch},
+			dispatch_flag = #{dispatchFlag}
+		WHERE id = #{id}
+		<if test="dispatchFlag != null and dispatchFlag != ''">
+			and dispatch_flag = #{dispatchFlag}
+		</if>
+	</update>
+	
+	<delete id="delete">
+		DELETE FROM gl.t_gl_workflow_conf WHERE id = #{id}
+	</delete>
+	
+	
+	<select id="getByMap" resultType="com.creditharmony.core.users.entity.WorkflowConfig">
+		SELECT
+			<include refid="sqlColumns"/>
+		FROM gl.t_gl_workflow_conf a
+		   <include refid="sqlJoins"/>
+		WHERE a.workflow_id = #{workflowId}
+			and a.node_id = #{nodeId}
+			and a.system_flag = #{systemFlag}
+	</select>
+</mapper>

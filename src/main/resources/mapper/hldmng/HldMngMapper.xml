@@ -1,0 +1,91 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.hldmng.dao.HldMngDao" >
+
+	<resultMap id="BaseResultMap" type="com.creditharmony.core.hldmng.entity.HldMngEntity" >
+		<id column="holiday" property="holiday" jdbcType="DATE" />
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="year" property="year" jdbcType="VARCHAR" />
+		<result column="month" property="month" jdbcType="VARCHAR" />
+		<result column="remark" property="remark" jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+	
+	<sql id="Base_Column_List" >
+		holiday,
+		id,
+		year,
+		month,
+		remark, 
+		create_by, 
+		create_time, 
+		modify_by, 
+		modify_time
+	</sql>
+	
+	<!-- 检索节假日 -->
+	<select id="selHld" resultMap="BaseResultMap" parameterType="com.creditharmony.core.hldmng.entity.HldMngEntity" >
+		SELECT 
+			<include refid="Base_Column_List" />
+		FROM  
+			gl.t_gl_holiday
+		<where>   
+			<if test="holiday != null and holiday != ''">
+				holiday = #{holiday}
+			</if>
+			<if test="year != null and year != ''">
+				AND year = #{year}
+			</if>
+			<if test="month != null and month != ''">
+				AND month = #{month}
+			</if>
+		</where>
+		ORDER BY holiday
+	</select>
+	
+	<!-- 删除节假日 -->
+	<delete id="delHld" parameterType="com.creditharmony.core.hldmng.entity.HldMngEntity" >
+		DELETE FROM  
+		   	gl.t_gl_holiday
+		<where>   
+			<if test="id != null and id != ''">
+				id = #{id}
+			</if>
+			<if test="year != null and year != ''">
+				AND year = #{year}
+			</if>
+		</where>
+	</delete>
+	
+	<!-- 添加节假日 -->
+	<insert id="insHld" parameterType="com.creditharmony.core.hldmng.entity.HldMngEntity" >
+		INSERT INTO gl.t_gl_holiday (
+			<include refid="Base_Column_List" />
+		) VALUES (
+			#{holiday}, 
+			#{id},
+			#{year},
+			#{month},
+			#{remark},
+			#{createBy}, 
+			#{createTime}, 
+		  	#{modifyBy}, 
+		  	#{modifyTime}
+		)
+	</insert>
+
+	<update id="updateByPrimaryKey" parameterType="com.creditharmony.core.hldmng.entity.HldMngEntity" >
+		update 
+			gl.t_gl_holiday
+		set 
+			create_by = #{createBy},
+			create_time = #{createTime},
+			modify_by = #{modifyBy},
+			modify_time = #{modifyTime}
+		where 
+			holiday = #{holiday}
+	</update>
+</mapper>

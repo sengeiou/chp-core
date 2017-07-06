@@ -1,0 +1,719 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.log.dao.OrgLogDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.core.log.entity.OrgLog">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="org_id" jdbcType="VARCHAR" property="orgId" />
+    <result column="parent_id" jdbcType="VARCHAR" property="parentId" />
+    <result column="parent_id_new" jdbcType="VARCHAR" property="parentIdNew" />
+    <result column="parent_ids" jdbcType="VARCHAR" property="parentIds" />
+    <result column="parent_ids_new" jdbcType="VARCHAR" property="parentIdsNew" />
+    <result column="name" jdbcType="VARCHAR" property="name" />
+    <result column="name_new" jdbcType="VARCHAR" property="nameNew" />
+    <result column="area_id" jdbcType="VARCHAR" property="areaId" />
+    <result column="area_id_new" jdbcType="VARCHAR" property="areaIdNew" />
+    <result column="code" jdbcType="VARCHAR" property="code" />
+    <result column="code_new" jdbcType="VARCHAR" property="codeNew" />
+    <result column="type" jdbcType="VARCHAR" property="type" />
+    <result column="type_new" jdbcType="VARCHAR" property="typeNew" />
+    <result column="grade" jdbcType="CHAR" property="grade" />
+    <result column="grade_new" jdbcType="CHAR" property="gradeNew" />
+    <result column="address" jdbcType="VARCHAR" property="address" />
+    <result column="address_new" jdbcType="VARCHAR" property="addressNew" />
+    <result column="zip_code" jdbcType="VARCHAR" property="zipCode" />
+    <result column="zip_code_new" jdbcType="VARCHAR" property="zipCodeNew" />
+    <result column="master" jdbcType="VARCHAR" property="master" />
+    <result column="master_new" jdbcType="VARCHAR" property="masterNew" />
+    <result column="phone" jdbcType="VARCHAR" property="phone" />
+    <result column="phone_new" jdbcType="VARCHAR" property="phoneNew" />
+    <result column="fax" jdbcType="VARCHAR" property="fax" />
+    <result column="fax_new" jdbcType="VARCHAR" property="faxNew" />
+    <result column="email" jdbcType="VARCHAR" property="email" />
+    <result column="email_new" jdbcType="VARCHAR" property="emailNew" />
+    <result column="useable" jdbcType="VARCHAR" property="useable" />
+    <result column="useable_new" jdbcType="VARCHAR" property="useableNew" />
+    <result column="remarks" jdbcType="VARCHAR" property="remarks" />
+    <result column="remarks_new" jdbcType="VARCHAR" property="remarksNew" />
+    <result column="del_flag" jdbcType="CHAR" property="delFlag" />
+    <result column="del_flag_new" jdbcType="CHAR" property="delFlagNew" />
+    <result column="province_id" jdbcType="VARCHAR" property="provinceId" />
+    <result column="province_id_new" jdbcType="VARCHAR" property="provinceIdNew" />
+    <result column="city_id" jdbcType="VARCHAR" property="cityId" />
+    <result column="city_id_new" jdbcType="VARCHAR" property="cityIdNew" />
+    <result column="district_id" jdbcType="VARCHAR" property="districtId" />
+    <result column="district_id_new" jdbcType="VARCHAR" property="districtIdNew" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+    <result column="party_type" jdbcType="VARCHAR" property="partyType" />
+    <result column="party_type_new" jdbcType="VARCHAR" property="partyTypeNew" />
+    <result column="store_code" jdbcType="VARCHAR" property="storeCode" />
+    <result column="store_code_new" jdbcType="VARCHAR" property="storeCodeNew" />
+    <result column="car_loan_code" jdbcType="VARCHAR" property="carLoanCode" />
+    <result column="car_loan_code_new" jdbcType="VARCHAR" property="carLoanCodeNew" />
+    <result column="frozen_user" jdbcType="VARCHAR" property="frozenUser" />
+    <result column="frozen_user_new" jdbcType="VARCHAR" property="frozenUserNew" />
+    <result column="credit_paperless" jdbcType="VARCHAR" property="creditPaperless" />
+    <result column="credit_paperless_new" jdbcType="VARCHAR" property="creditPaperlessNew" />
+    <result column="car_paperless" jdbcType="VARCHAR" property="carPaperless" />
+    <result column="car_paperless_new" jdbcType="VARCHAR" property="carPaperlessNew" />
+    <result column="system_flag" jdbcType="INTEGER" property="systemFlag" />
+    <result column="operate_type" jdbcType="CHAR" property="operateType" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, org_id, parent_id, parent_id_new, parent_ids, parent_ids_new, name, name_new, 
+    area_id, area_id_new, code, code_new, type, type_new, grade, grade_new, address, 
+    address_new, zip_code, zip_code_new, master, master_new, phone, phone_new, fax, fax_new, 
+    email, email_new, useable, useable_new, remarks, remarks_new, del_flag, del_flag_new, 
+    province_id, province_id_new, city_id, city_id_new, district_id, district_id_new, 
+    create_by, create_time, modify_by, modify_time, party_type, party_type_new, store_code, 
+    store_code_new, car_loan_code, car_loan_code_new, frozen_user, frozen_user_new, credit_paperless, 
+    credit_paperless_new, car_paperless, car_paperless_new, system_flag, operate_type
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_gl_org_log
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_gl_org_log
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.core.log.entity.OrgLog">
+    insert into t_gl_org_log (id, org_id, parent_id, 
+      parent_id_new, parent_ids, parent_ids_new, 
+      name, name_new, area_id, 
+      area_id_new, code, code_new, 
+      type, type_new, grade, 
+      grade_new, address, address_new, 
+      zip_code, zip_code_new, master, 
+      master_new, phone, phone_new, 
+      fax, fax_new, email, 
+      email_new, useable, useable_new, 
+      remarks, remarks_new, del_flag, 
+      del_flag_new, province_id, province_id_new, 
+      city_id, city_id_new, district_id, 
+      district_id_new, create_by, create_time, 
+      modify_by, modify_time, party_type, 
+      party_type_new, store_code, store_code_new, 
+      car_loan_code, car_loan_code_new, frozen_user, 
+      frozen_user_new, credit_paperless, credit_paperless_new, 
+      car_paperless, car_paperless_new, system_flag, 
+      operate_type)
+    values (#{id,jdbcType=VARCHAR}, #{orgId,jdbcType=VARCHAR}, #{parentId,jdbcType=VARCHAR}, 
+      #{parentIdNew,jdbcType=VARCHAR}, #{parentIds,jdbcType=VARCHAR}, #{parentIdsNew,jdbcType=VARCHAR}, 
+      #{name,jdbcType=VARCHAR}, #{nameNew,jdbcType=VARCHAR}, #{areaId,jdbcType=VARCHAR}, 
+      #{areaIdNew,jdbcType=VARCHAR}, #{code,jdbcType=VARCHAR}, #{codeNew,jdbcType=VARCHAR}, 
+      #{type,jdbcType=VARCHAR}, #{typeNew,jdbcType=VARCHAR}, #{grade,jdbcType=CHAR}, 
+      #{gradeNew,jdbcType=CHAR}, #{address,jdbcType=VARCHAR}, #{addressNew,jdbcType=VARCHAR}, 
+      #{zipCode,jdbcType=VARCHAR}, #{zipCodeNew,jdbcType=VARCHAR}, #{master,jdbcType=VARCHAR}, 
+      #{masterNew,jdbcType=VARCHAR}, #{phone,jdbcType=VARCHAR}, #{phoneNew,jdbcType=VARCHAR}, 
+      #{fax,jdbcType=VARCHAR}, #{faxNew,jdbcType=VARCHAR}, #{email,jdbcType=VARCHAR}, 
+      #{emailNew,jdbcType=VARCHAR}, #{useable,jdbcType=VARCHAR}, #{useableNew,jdbcType=VARCHAR}, 
+      #{remarks,jdbcType=VARCHAR}, #{remarksNew,jdbcType=VARCHAR}, #{delFlag,jdbcType=CHAR}, 
+      #{delFlagNew,jdbcType=CHAR}, #{provinceId,jdbcType=VARCHAR}, #{provinceIdNew,jdbcType=VARCHAR}, 
+      #{cityId,jdbcType=VARCHAR}, #{cityIdNew,jdbcType=VARCHAR}, #{districtId,jdbcType=VARCHAR}, 
+      #{districtIdNew,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP}, #{partyType,jdbcType=VARCHAR}, 
+      #{partyTypeNew,jdbcType=VARCHAR}, #{storeCode,jdbcType=VARCHAR}, #{storeCodeNew,jdbcType=VARCHAR}, 
+      #{carLoanCode,jdbcType=VARCHAR}, #{carLoanCodeNew,jdbcType=VARCHAR}, #{frozenUser,jdbcType=VARCHAR}, 
+      #{frozenUserNew,jdbcType=VARCHAR}, #{creditPaperless,jdbcType=VARCHAR}, #{creditPaperlessNew,jdbcType=VARCHAR}, 
+      #{carPaperless,jdbcType=VARCHAR}, #{carPaperlessNew,jdbcType=VARCHAR}, #{systemFlag,jdbcType=INTEGER}, 
+      #{operateType,jdbcType=CHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.core.log.entity.OrgLog">
+    insert into t_gl_org_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="orgId != null">
+        org_id,
+      </if>
+      <if test="parentId != null">
+        parent_id,
+      </if>
+      <if test="parentIdNew != null">
+        parent_id_new,
+      </if>
+      <if test="parentIds != null">
+        parent_ids,
+      </if>
+      <if test="parentIdsNew != null">
+        parent_ids_new,
+      </if>
+      <if test="name != null">
+        name,
+      </if>
+      <if test="nameNew != null">
+        name_new,
+      </if>
+      <if test="areaId != null">
+        area_id,
+      </if>
+      <if test="areaIdNew != null">
+        area_id_new,
+      </if>
+      <if test="code != null">
+        code,
+      </if>
+      <if test="codeNew != null">
+        code_new,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="typeNew != null">
+        type_new,
+      </if>
+      <if test="grade != null">
+        grade,
+      </if>
+      <if test="gradeNew != null">
+        grade_new,
+      </if>
+      <if test="address != null">
+        address,
+      </if>
+      <if test="addressNew != null">
+        address_new,
+      </if>
+      <if test="zipCode != null">
+        zip_code,
+      </if>
+      <if test="zipCodeNew != null">
+        zip_code_new,
+      </if>
+      <if test="master != null">
+        master,
+      </if>
+      <if test="masterNew != null">
+        master_new,
+      </if>
+      <if test="phone != null">
+        phone,
+      </if>
+      <if test="phoneNew != null">
+        phone_new,
+      </if>
+      <if test="fax != null">
+        fax,
+      </if>
+      <if test="faxNew != null">
+        fax_new,
+      </if>
+      <if test="email != null">
+        email,
+      </if>
+      <if test="emailNew != null">
+        email_new,
+      </if>
+      <if test="useable != null">
+        useable,
+      </if>
+      <if test="useableNew != null">
+        useable_new,
+      </if>
+      <if test="remarks != null">
+        remarks,
+      </if>
+      <if test="remarksNew != null">
+        remarks_new,
+      </if>
+      <if test="delFlag != null">
+        del_flag,
+      </if>
+      <if test="delFlagNew != null">
+        del_flag_new,
+      </if>
+      <if test="provinceId != null">
+        province_id,
+      </if>
+      <if test="provinceIdNew != null">
+        province_id_new,
+      </if>
+      <if test="cityId != null">
+        city_id,
+      </if>
+      <if test="cityIdNew != null">
+        city_id_new,
+      </if>
+      <if test="districtId != null">
+        district_id,
+      </if>
+      <if test="districtIdNew != null">
+        district_id_new,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+      <if test="partyType != null">
+        party_type,
+      </if>
+      <if test="partyTypeNew != null">
+        party_type_new,
+      </if>
+      <if test="storeCode != null">
+        store_code,
+      </if>
+      <if test="storeCodeNew != null">
+        store_code_new,
+      </if>
+      <if test="carLoanCode != null">
+        car_loan_code,
+      </if>
+      <if test="carLoanCodeNew != null">
+        car_loan_code_new,
+      </if>
+      <if test="frozenUser != null">
+        frozen_user,
+      </if>
+      <if test="frozenUserNew != null">
+        frozen_user_new,
+      </if>
+      <if test="creditPaperless != null">
+        credit_paperless,
+      </if>
+      <if test="creditPaperlessNew != null">
+        credit_paperless_new,
+      </if>
+      <if test="carPaperless != null">
+        car_paperless,
+      </if>
+      <if test="carPaperlessNew != null">
+        car_paperless_new,
+      </if>
+      <if test="systemFlag != null">
+        system_flag,
+      </if>
+      <if test="operateType != null">
+        operate_type,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="orgId != null">
+        #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null">
+        #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIdNew != null">
+        #{parentIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIds != null">
+        #{parentIds,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIdsNew != null">
+        #{parentIdsNew,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="nameNew != null">
+        #{nameNew,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null">
+        #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaIdNew != null">
+        #{areaIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="codeNew != null">
+        #{codeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="typeNew != null">
+        #{typeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="grade != null">
+        #{grade,jdbcType=CHAR},
+      </if>
+      <if test="gradeNew != null">
+        #{gradeNew,jdbcType=CHAR},
+      </if>
+      <if test="address != null">
+        #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="addressNew != null">
+        #{addressNew,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null">
+        #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCodeNew != null">
+        #{zipCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="master != null">
+        #{master,jdbcType=VARCHAR},
+      </if>
+      <if test="masterNew != null">
+        #{masterNew,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="phoneNew != null">
+        #{phoneNew,jdbcType=VARCHAR},
+      </if>
+      <if test="fax != null">
+        #{fax,jdbcType=VARCHAR},
+      </if>
+      <if test="faxNew != null">
+        #{faxNew,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null">
+        #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="emailNew != null">
+        #{emailNew,jdbcType=VARCHAR},
+      </if>
+      <if test="useable != null">
+        #{useable,jdbcType=VARCHAR},
+      </if>
+      <if test="useableNew != null">
+        #{useableNew,jdbcType=VARCHAR},
+      </if>
+      <if test="remarks != null">
+        #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="remarksNew != null">
+        #{remarksNew,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+        #{delFlag,jdbcType=CHAR},
+      </if>
+      <if test="delFlagNew != null">
+        #{delFlagNew,jdbcType=CHAR},
+      </if>
+      <if test="provinceId != null">
+        #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceIdNew != null">
+        #{provinceIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null">
+        #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityIdNew != null">
+        #{cityIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="districtId != null">
+        #{districtId,jdbcType=VARCHAR},
+      </if>
+      <if test="districtIdNew != null">
+        #{districtIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="partyType != null">
+        #{partyType,jdbcType=VARCHAR},
+      </if>
+      <if test="partyTypeNew != null">
+        #{partyTypeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCode != null">
+        #{storeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCodeNew != null">
+        #{storeCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="carLoanCode != null">
+        #{carLoanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="carLoanCodeNew != null">
+        #{carLoanCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="frozenUser != null">
+        #{frozenUser,jdbcType=VARCHAR},
+      </if>
+      <if test="frozenUserNew != null">
+        #{frozenUserNew,jdbcType=VARCHAR},
+      </if>
+      <if test="creditPaperless != null">
+        #{creditPaperless,jdbcType=VARCHAR},
+      </if>
+      <if test="creditPaperlessNew != null">
+        #{creditPaperlessNew,jdbcType=VARCHAR},
+      </if>
+      <if test="carPaperless != null">
+        #{carPaperless,jdbcType=VARCHAR},
+      </if>
+      <if test="carPaperlessNew != null">
+        #{carPaperlessNew,jdbcType=VARCHAR},
+      </if>
+      <if test="systemFlag != null">
+        #{systemFlag,jdbcType=INTEGER},
+      </if>
+      <if test="operateType != null">
+        #{operateType,jdbcType=CHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.core.log.entity.OrgLog">
+    update t_gl_org_log
+    <set>
+      <if test="orgId != null">
+        org_id = #{orgId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentId != null">
+        parent_id = #{parentId,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIdNew != null">
+        parent_id_new = #{parentIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIds != null">
+        parent_ids = #{parentIds,jdbcType=VARCHAR},
+      </if>
+      <if test="parentIdsNew != null">
+        parent_ids_new = #{parentIdsNew,jdbcType=VARCHAR},
+      </if>
+      <if test="name != null">
+        name = #{name,jdbcType=VARCHAR},
+      </if>
+      <if test="nameNew != null">
+        name_new = #{nameNew,jdbcType=VARCHAR},
+      </if>
+      <if test="areaId != null">
+        area_id = #{areaId,jdbcType=VARCHAR},
+      </if>
+      <if test="areaIdNew != null">
+        area_id_new = #{areaIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="code != null">
+        code = #{code,jdbcType=VARCHAR},
+      </if>
+      <if test="codeNew != null">
+        code_new = #{codeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=VARCHAR},
+      </if>
+      <if test="typeNew != null">
+        type_new = #{typeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="grade != null">
+        grade = #{grade,jdbcType=CHAR},
+      </if>
+      <if test="gradeNew != null">
+        grade_new = #{gradeNew,jdbcType=CHAR},
+      </if>
+      <if test="address != null">
+        address = #{address,jdbcType=VARCHAR},
+      </if>
+      <if test="addressNew != null">
+        address_new = #{addressNew,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCode != null">
+        zip_code = #{zipCode,jdbcType=VARCHAR},
+      </if>
+      <if test="zipCodeNew != null">
+        zip_code_new = #{zipCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="master != null">
+        master = #{master,jdbcType=VARCHAR},
+      </if>
+      <if test="masterNew != null">
+        master_new = #{masterNew,jdbcType=VARCHAR},
+      </if>
+      <if test="phone != null">
+        phone = #{phone,jdbcType=VARCHAR},
+      </if>
+      <if test="phoneNew != null">
+        phone_new = #{phoneNew,jdbcType=VARCHAR},
+      </if>
+      <if test="fax != null">
+        fax = #{fax,jdbcType=VARCHAR},
+      </if>
+      <if test="faxNew != null">
+        fax_new = #{faxNew,jdbcType=VARCHAR},
+      </if>
+      <if test="email != null">
+        email = #{email,jdbcType=VARCHAR},
+      </if>
+      <if test="emailNew != null">
+        email_new = #{emailNew,jdbcType=VARCHAR},
+      </if>
+      <if test="useable != null">
+        useable = #{useable,jdbcType=VARCHAR},
+      </if>
+      <if test="useableNew != null">
+        useable_new = #{useableNew,jdbcType=VARCHAR},
+      </if>
+      <if test="remarks != null">
+        remarks = #{remarks,jdbcType=VARCHAR},
+      </if>
+      <if test="remarksNew != null">
+        remarks_new = #{remarksNew,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+        del_flag = #{delFlag,jdbcType=CHAR},
+      </if>
+      <if test="delFlagNew != null">
+        del_flag_new = #{delFlagNew,jdbcType=CHAR},
+      </if>
+      <if test="provinceId != null">
+        province_id = #{provinceId,jdbcType=VARCHAR},
+      </if>
+      <if test="provinceIdNew != null">
+        province_id_new = #{provinceIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="cityId != null">
+        city_id = #{cityId,jdbcType=VARCHAR},
+      </if>
+      <if test="cityIdNew != null">
+        city_id_new = #{cityIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="districtId != null">
+        district_id = #{districtId,jdbcType=VARCHAR},
+      </if>
+      <if test="districtIdNew != null">
+        district_id_new = #{districtIdNew,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="partyType != null">
+        party_type = #{partyType,jdbcType=VARCHAR},
+      </if>
+      <if test="partyTypeNew != null">
+        party_type_new = #{partyTypeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCode != null">
+        store_code = #{storeCode,jdbcType=VARCHAR},
+      </if>
+      <if test="storeCodeNew != null">
+        store_code_new = #{storeCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="carLoanCode != null">
+        car_loan_code = #{carLoanCode,jdbcType=VARCHAR},
+      </if>
+      <if test="carLoanCodeNew != null">
+        car_loan_code_new = #{carLoanCodeNew,jdbcType=VARCHAR},
+      </if>
+      <if test="frozenUser != null">
+        frozen_user = #{frozenUser,jdbcType=VARCHAR},
+      </if>
+      <if test="frozenUserNew != null">
+        frozen_user_new = #{frozenUserNew,jdbcType=VARCHAR},
+      </if>
+      <if test="creditPaperless != null">
+        credit_paperless = #{creditPaperless,jdbcType=VARCHAR},
+      </if>
+      <if test="creditPaperlessNew != null">
+        credit_paperless_new = #{creditPaperlessNew,jdbcType=VARCHAR},
+      </if>
+      <if test="carPaperless != null">
+        car_paperless = #{carPaperless,jdbcType=VARCHAR},
+      </if>
+      <if test="carPaperlessNew != null">
+        car_paperless_new = #{carPaperlessNew,jdbcType=VARCHAR},
+      </if>
+      <if test="systemFlag != null">
+        system_flag = #{systemFlag,jdbcType=INTEGER},
+      </if>
+      <if test="operateType != null">
+        operate_type = #{operateType,jdbcType=CHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.core.log.entity.OrgLog">
+    update t_gl_org_log
+    set org_id = #{orgId,jdbcType=VARCHAR},
+      parent_id = #{parentId,jdbcType=VARCHAR},
+      parent_id_new = #{parentIdNew,jdbcType=VARCHAR},
+      parent_ids = #{parentIds,jdbcType=VARCHAR},
+      parent_ids_new = #{parentIdsNew,jdbcType=VARCHAR},
+      name = #{name,jdbcType=VARCHAR},
+      name_new = #{nameNew,jdbcType=VARCHAR},
+      area_id = #{areaId,jdbcType=VARCHAR},
+      area_id_new = #{areaIdNew,jdbcType=VARCHAR},
+      code = #{code,jdbcType=VARCHAR},
+      code_new = #{codeNew,jdbcType=VARCHAR},
+      type = #{type,jdbcType=VARCHAR},
+      type_new = #{typeNew,jdbcType=VARCHAR},
+      grade = #{grade,jdbcType=CHAR},
+      grade_new = #{gradeNew,jdbcType=CHAR},
+      address = #{address,jdbcType=VARCHAR},
+      address_new = #{addressNew,jdbcType=VARCHAR},
+      zip_code = #{zipCode,jdbcType=VARCHAR},
+      zip_code_new = #{zipCodeNew,jdbcType=VARCHAR},
+      master = #{master,jdbcType=VARCHAR},
+      master_new = #{masterNew,jdbcType=VARCHAR},
+      phone = #{phone,jdbcType=VARCHAR},
+      phone_new = #{phoneNew,jdbcType=VARCHAR},
+      fax = #{fax,jdbcType=VARCHAR},
+      fax_new = #{faxNew,jdbcType=VARCHAR},
+      email = #{email,jdbcType=VARCHAR},
+      email_new = #{emailNew,jdbcType=VARCHAR},
+      useable = #{useable,jdbcType=VARCHAR},
+      useable_new = #{useableNew,jdbcType=VARCHAR},
+      remarks = #{remarks,jdbcType=VARCHAR},
+      remarks_new = #{remarksNew,jdbcType=VARCHAR},
+      del_flag = #{delFlag,jdbcType=CHAR},
+      del_flag_new = #{delFlagNew,jdbcType=CHAR},
+      province_id = #{provinceId,jdbcType=VARCHAR},
+      province_id_new = #{provinceIdNew,jdbcType=VARCHAR},
+      city_id = #{cityId,jdbcType=VARCHAR},
+      city_id_new = #{cityIdNew,jdbcType=VARCHAR},
+      district_id = #{districtId,jdbcType=VARCHAR},
+      district_id_new = #{districtIdNew,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      party_type = #{partyType,jdbcType=VARCHAR},
+      party_type_new = #{partyTypeNew,jdbcType=VARCHAR},
+      store_code = #{storeCode,jdbcType=VARCHAR},
+      store_code_new = #{storeCodeNew,jdbcType=VARCHAR},
+      car_loan_code = #{carLoanCode,jdbcType=VARCHAR},
+      car_loan_code_new = #{carLoanCodeNew,jdbcType=VARCHAR},
+      frozen_user = #{frozenUser,jdbcType=VARCHAR},
+      frozen_user_new = #{frozenUserNew,jdbcType=VARCHAR},
+      credit_paperless = #{creditPaperless,jdbcType=VARCHAR},
+      credit_paperless_new = #{creditPaperlessNew,jdbcType=VARCHAR},
+      car_paperless = #{carPaperless,jdbcType=VARCHAR},
+      car_paperless_new = #{carPaperlessNew,jdbcType=VARCHAR},
+      system_flag = #{systemFlag,jdbcType=INTEGER},
+      operate_type = #{operateType,jdbcType=CHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+</mapper>

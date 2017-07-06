@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.report.dao.ReportUrlDao">
+
+	<resultMap id="ReportUrlMap" type="com.creditharmony.core.report.entity.ReportUrl">
+        <id column="ID" property="id" jdbcType="DECIMAL"/>
+        <result column="RPT_NAME" property="reportName" jdbcType="VARCHAR"/>
+        <result column="IP" property="ip" jdbcType="VARCHAR"/>
+        <result column="PORT" property="port" jdbcType="VARCHAR"/>
+        <result column="URL" property="url" jdbcType="VARCHAR"/>
+    </resultMap>
+	
+	<sql id="Base_Column_List">
+       ID, RPT_NAME, IP, PORT, URL
+    </sql>
+	
+	<select id="get" resultMap="ReportUrlMap" parameterType="string">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gl.t_gl_rpt_url
+        WHERE ID = #{id,jdbcType=DECIMAL}
+    </select>
+
+    <delete id="delete" parameterType="com.creditharmony.core.report.entity.ReportUrl">
+        DELETE FROM gl.t_gl_rpt_url
+        WHERE id = #{id}
+    </delete>
+    
+    <delete id="deleteById" parameterType="string">
+        DELETE FROM gl.t_gl_rpt_url
+        WHERE id = #{id}
+    </delete>
+    
+    <insert id="insert" parameterType="com.creditharmony.core.report.entity.ReportUrl">
+		INSERT INTO gl.t_gl_rpt_url (
+			ID, 
+			RPT_NAME, 
+			IP, 
+			PORT, 
+			URL
+		) VALUES (
+			#{id}, 
+			#{reportName},
+			#{ip}, 
+			#{port},
+			#{url}
+		)
+    </insert>
+    
+    <update id="update" parameterType="com.creditharmony.core.report.entity.ReportUrl">
+	    UPDATE gl.t_gl_rpt_url
+	    SET RPT_NAME = #{reportName,jdbcType=VARCHAR},
+	        IP = #{ip,jdbcType=VARCHAR},
+	        PORT= #{port,jdbcType=VARCHAR},
+	        URL = #{url,jdbcType=VARCHAR}
+	    WHERE ID = #{id,jdbcType=DECIMAL}
+    </update>
+    
+    
+</mapper>

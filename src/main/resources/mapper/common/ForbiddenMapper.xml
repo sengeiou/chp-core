@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.common.dao.ForbiddenDao">
+
+	<resultMap id="BaseResultMap"
+		type="com.creditharmony.core.common.entity.Forbidden">
+		<result column="id" property="id" jdbcType="VARCHAR" />
+		<result column="operator_user_code" property="operatorUserCode"
+			jdbcType="VARCHAR" />
+		<result column="forbidden_user_code" property="forbiddenUserCode"
+			jdbcType="VARCHAR" />
+		<result column="valid_flag" property="validFlag" jdbcType="VARCHAR" />
+		<result column="forbidden_start_time" property="forbiddenStartTime"
+			jdbcType="TIMESTAMP" />
+		<result column="forbidden_end_time" property="forbiddenEndTime"
+			jdbcType="TIMESTAMP" />
+		<result column="operating_instructions" property="operatingInstructions"
+			jdbcType="VARCHAR" />
+		<result column="job_number" property="jobNumber" jdbcType="VARCHAR" />
+		<result column="department_id" property="departmentId"
+			jdbcType="VARCHAR" />
+		<result column="create_by" property="createBy" jdbcType="VARCHAR" />
+		<result column="create_time" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="modify_by" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="modify_time" property="modifyTime" jdbcType="TIMESTAMP" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+		id,operator_user_code,forbidden_user_code,valid_flag,forbidden_start_time,forbidden_end_time,operating_instructions,job_number,
+		create_by, create_time, modify_by, modify_time
+	</sql>
+	<sql id="Join_Columns">
+		operator_user_code,forbidden_user_code,valid_flag,forbidden_start_time,forbidden_end_time,operating_instructions,job_number
+	</sql>
+
+	<select id="searchForbidden" resultMap="BaseResultMap"
+		parameterType="java.util.Date">
+		select
+		<include refid="Base_Column_List" />
+		from gl.t_gl_forbidden
+		where valid_flag !='1' and forbidden_start_time
+		&lt;= #{0} and
+		forbidden_end_time > #{0}
+		order by forbidden_end_time
+		desc
+		nulls last
+	</select>
+	<select id="findListByParams" resultType="com.creditharmony.core.common.entity.ex.ForbiddenEx"
+		parameterType="java.util.Map">
+		select * from (select
+		distinct fb.id,
+		a.name as "operatorUserName",
+		b.name as
+		"forbiddenUserName",
+		<include refid="Join_Columns" />
+		from
+		gl.t_gl_forbidden fb left join gl.t_gl_user a on
+		fb.operator_user_code = a.id left join gl.t_gl_user b on
+		fb.forbidden_user_code = b.id left join gl.t_gl_user_role_org uro on
+		a.id = uro.user_id left join
+		gl.t_gl_org h on
+		uro.org_id = h.id where
+		fb.forbidden_end_time > now() and
+		(h.id =
+		#{departmentId} or
+		h.parent_ids like
+		concat('%,',#{departmentId},',%') or
+		h.parent_ids like
+		concat(#{departmentId},',%') or
+		h.parent_ids like
+		concat('%,',#{departmentId}))
+		<if test="forbiddenUserName !=null and forbiddenUserName != ''">
+			and b.name like
+			concat('%',#{forbiddenUserName},'%')
+		</if>
+		<if test="jobNumber != null and jobNumber != ''">
+			and fb.job_number like concat('%',#{jobNumber},'%')
+		</if>
+		) mn
+		order by
+		mn.forbidden_end_time desc
+		nulls
+		last
+	</select>
+	<select id="getByPrimaryId" resultType="com.creditharmony.core.common.entity.ex.ForbiddenEx"
+		parameterType="java.lang.String">
+		select
+		fb.id,
+		a.name as "operatorUserName",
+		b.name as
+		"forbiddenUserName",
+		<include refid="Join_Columns" />
+		from
+		gl.t_gl_forbidden fb left join gl.t_gl_user a
+		on
+		a.id =
+		fb.operator_user_code left join gl.t_gl_user b on
+		b.id =
+		fb.forbidden_user_code
+		where
+		fb.id = #{0}
+	</select>
+	<select id="findByUserCode" resultMap="BaseResultMap"
+		parameterType="java.util.Map">
+		select
+		<include refid="Base_Column_List" />
+		from gl.t_gl_forbidden
+		where forbidden_user_code = #{forbiddenUserCode}
+		and forbidden_start_time &lt;= now()
+		and
+		forbidden_end_time > now() and
+		valid_flag = #{validFlag}
+	</select>
+	<select id="selectUserByRole" resultType="com.creditharmony.core.users.entity.User"
+		parameterType="java.util.Map">
+		select
+		distinct a.*
+		from
+		gl.t_gl_user a left join gl.t_gl_user_role_org
+		uro on
+		a.id = uro.user_id
+		left join
+		gl.t_gl_org h on uro.org_id = h.id
+		where a.status = '1' and
+		a.has_login
+		= '1'
+		and a.id not in(
+		select
+		fb.forbidden_user_code
+		from
+		gl.t_gl_forbidden
+		fb where
+		fb.forbidden_start_time &lt;= now()
+		and
+		fb.forbidden_end_time > now()
+		)
+		<if test="delFlag != null and delFlag != ''">
+			and a.del_flag = #{delFlag}
+		</if>
+		<if test="departmentId != null and departmentId != ''">
+			AND (h.id = #{departmentId,jdbcType=VARCHAR} OR
+			h.parent_ids LIKE
+			CONCAT('%,', #{departmentId,jdbcType=VARCHAR},
+			',%')
+			OR
+			h.parent_ids LIKE
+			CONCAT(#{departmentId,jdbcType=VARCHAR},
+			',%') OR
+			h.parent_ids LIKE
+			CONCAT('%,', #{departmentId,jdbcType=VARCHAR}))
+		</if>
+	</select>
+
+	<insert id="insertForbidden" parameterType="com.creditharmony.core.common.entity.ex.ForbiddenEx">
+		insert into
+		gl.t_gl_forbidden (id, operator_user_code,
+		forbidden_user_code,
+		valid_flag, forbidden_start_time,
+		forbidden_end_time,
+		operating_instructions,job_number,department_id, create_by,
+		create_time
+		)
+		values
+		(#{id,jdbcType=VARCHAR},
+		#{operatorUserCode,jdbcType=VARCHAR},
+		#{forbiddenUserCode,jdbcType=VARCHAR},
+		#{validFlag,jdbcType=VARCHAR},
+		#{forbiddenStartTime,jdbcType=TIMESTAMP},
+		#{forbiddenEndTime,jdbcType=TIMESTAMP},
+		#{operatingInstructions,jdbcType=VARCHAR},
+		#{jobNumber,jdbcType=VARCHAR},
+		#{departmentId,jdbcType=VARCHAR},
+		#{createBy,jdbcType=VARCHAR},
+		#{createTime,jdbcType=TIMESTAMP}
+		)
+	</insert>
+	<insert id="insertSelective" parameterType="com.creditharmony.core.common.entity.ex.ForbiddenEx">
+		insert into gl.t_gl_forbidden
+		<trim prefix="(" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				id,
+			</if>
+			<if test="operatorUserCode != null">
+				operator_user_code,
+			</if>
+			<if test="forbiddenUserCode != null">
+				forbidden_user_code,
+			</if>
+			<if test="validFlag != null">
+				valid_flag,
+			</if>
+			<if test="forbiddenStartTime != null">
+				forbidden_start_time,
+			</if>
+			<if test="forbiddenEndTime != null">
+				forbidden_end_time,
+			</if>
+			<if test="operatingInstructions != null">
+				operating_instructions,
+			</if>
+			<if test="jobNumber != null">
+				job_number,
+			</if>
+			<if test="departmentId != null">
+				department_id,
+			</if>
+			<if test="createBy != null">
+				create_by,
+			</if>
+			<if test="createTime != null">
+				create_time,
+			</if>
+		</trim>
+		<trim prefix="values (" suffix=")" suffixOverrides=",">
+			<if test="id != null">
+				#{id,jdbcType=VARCHAR},
+			</if>
+			<if test="operatorUserCode != null">
+				#{operatorUserCode,jdbcType=VARCHAR},
+			</if>
+			<if test="forbiddenUserCode != null">
+				#{forbiddenUserCode,jdbcType=VARCHAR},
+			</if>
+			<if test="validFlag != null">
+				#{validFlag,jdbcType=VARCHAR},
+			</if>
+			<if test="forbiddenStartTime != null">
+				#{forbiddenStartTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="forbiddenEndTime != null">
+				#{forbiddenEndTime,jdbcType=TIMESTAMP},
+			</if>
+			<if test="operatingInstructions != null">
+				#{operatingInstructions,jdbcType=VARCHAR},
+			</if>
+			<if test="jobNumber != null">
+				#{jobNumber,jdbcType=VARCHAR},
+			</if>
+			<if test="departmentId != null">
+				#{departmentId,jdbcType=VARCHAR},
+			</if>
+			<if test="createBy != null">
+				#{createBy,jdbcType=VARCHAR},
+			</if>
+			<if test="createTime != null">
+				#{createTime,jdbcType=TIMESTAMP},
+			</if>
+		</trim>
+	</insert>
+
+	<update id="updateSelective" parameterType="com.creditharmony.core.common.entity.ex.ForbiddenEx">
+		update
+		gl.t_gl_forbidden
+		set
+		operator_user_code =
+		#{operatorUserCode,jdbcType=VARCHAR},
+		forbidden_user_code =
+		#{forbiddenUserCode,jdbcType=VARCHAR},
+		valid_flag =
+		#{validFlag,jdbcType=VARCHAR},
+		forbidden_start_time =
+		#{forbiddenStartTime,jdbcType=TIMESTAMP},
+		forbidden_end_time =
+		#{forbiddenEndTime,jdbcType=TIMESTAMP},
+		operating_instructions =
+		#{operatingInstructions,jdbcType=VARCHAR},
+		job_number =
+		#{jobNumber,jdbcType=VARCHAR},
+		department_id =
+		#{departmentId,jdbcType=VARCHAR},
+		modify_by =
+		#{modifyBy,jdbcType=VARCHAR},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+	<update id="updateValid" parameterType="com.creditharmony.core.common.entity.ex.ForbiddenEx">
+		update gl.t_gl_forbidden
+		set
+		valid_flag = #{validFlag,jdbcType=VARCHAR},
+		modify_by =
+		#{modifyBy,jdbcType=VARCHAR},
+		modify_time =
+		#{modifyTime,jdbcType=TIMESTAMP}
+		where id = #{id,jdbcType=VARCHAR}
+	</update>
+
+	<delete id="deleteByPrimaryId" parameterType="java.lang.String">
+		delete from
+		gl.t_gl_forbidden
+		where id = #{0}
+	</delete>
+
+</mapper>

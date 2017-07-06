@@ -1,0 +1,187 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.deduct.dao.PlatformBankDao" >
+
+	<resultMap id="BaseResultMap" type="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+		<id column="sys_id" property="sysId" jdbcType="VARCHAR" />
+	    <id column="platform_id" property="platformId" jdbcType="VARCHAR" />
+	    <id column="deduct_flag" property="deductFlag" jdbcType="VARCHAR" />
+	    <id column="deduct_type" property="deductType" jdbcType="VARCHAR" />
+	    <id column="bank_id" property="bankId" jdbcType="VARCHAR" />
+	    <result column="bank_cd" property="bankCd" jdbcType="VARCHAR" />
+	    <result column="platform_name" property="platformName" jdbcType="VARCHAR" />
+	    <result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+	    <result column="single_limit_money" property="singleLimitMoney" jdbcType="INTEGER" />
+	    <result column="day_limit_money" property="dayLimitMoney" jdbcType="BIGINT" />
+	    <result column="day_limit_times" property="dayLimitTimes" jdbcType="INTEGER" />
+	    <result column="status" property="status" jdbcType="VARCHAR" />
+	    <result column="id" property="id" jdbcType="VARCHAR" />
+  	</resultMap>
+  
+  	<sql id="Base_Column_List" >
+  		sys_id,
+	    platform_id, 
+	    deduct_flag, 
+	    deduct_type, 
+	    bank_id, 
+	    bank_cd, 
+	    platform_name, 
+	    bank_name, 
+	    single_limit_money, 
+	    day_limit_money, 
+	    day_limit_times,
+	    status,
+	    id
+  	</sql>
+	
+	<!-- 检索第三方平台数据 -->
+	<select id="selPlatformBank" resultMap="BaseResultMap" parameterType="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+	    SELECT  
+	    	<include refid="Base_Column_List" />
+	    FROM  
+	    	gl.t_gl_platform_bank
+	    <where>
+			<if test="sysId != null and sysId != ''" >
+	        	sys_id = #{sysId}
+	      	</if>
+			<if test="platformId != null and platformId != ''" >
+	        	AND platform_id = #{platformId}
+	      	</if>
+			<if test="bankId != null and bankId != ''" >
+	        	AND bank_id = #{bankId}
+	      	</if>
+	      	<if test="deductFlag != null and deductFlag != ''">
+	      		AND deduct_flag = #{deductFlag}
+	      	</if>
+	      	<if test="deductType != null and deductType != ''">
+	      		AND deduct_type = #{deductType}
+	      	</if>
+	      	<if test="status != null and status != ''">
+	      		AND status = #{status}
+	      	</if>
+	      	<if test="id != null and id != ''">
+	      		AND id = #{id}
+	      	</if>
+		</where>
+	</select>
+	
+	<!-- 添加平台 -->
+	<insert id="insPlatformBank" parameterType="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+	    INSERT INTO gl.t_gl_platform_bank (
+	    	<include refid="Base_Column_List" />
+	    ) VALUES (
+	    	#{sysId},
+		    #{platformId}, 
+		    #{deductFlag}, 
+		    #{deductType}, 
+		    #{bankId}, 
+		    #{bankCd}, 
+		    #{platformName}, 
+		    #{bankName}, 
+		    #{singleLimitMoney}, 
+		    #{dayLimitMoney}, 
+		    #{dayLimitTimes},
+		    #{status},
+		    #{id}
+	    )
+	</insert>
+	
+	<!-- 更新平台 -->
+	<update id="updPlatformBank" parameterType="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+	    UPDATE 
+	    	gl.t_gl_platform_bank
+	    <set >
+			<if test="deductType != null" >
+	        	deduct_type = #{deductType},
+	      	</if>
+			<if test="bankCd != null" >
+	        	bank_cd = #{bankCd},
+	      	</if>
+	      	<if test="platformName != null" >
+	        	platform_name = #{platformName},
+	      	</if>
+	      	<if test="bankName != null" >
+	        	bank_name = #{bankName},
+	      	</if>
+	      	<if test="singleLimitMoney != null" >
+	        	single_limit_money = #{singleLimitMoney},
+	      	</if>
+	      	<if test="dayLimitMoney != null" >
+	        	day_limit_money = #{dayLimitMoney},
+	      	</if>
+	      	<if test="dayLimitTimes != null" >
+	        	day_limit_times = #{dayLimitTimes},
+	      	</if>
+	      	<if test="status != null" >
+	        	status = #{status}
+	      	</if>
+	    </set>
+	    <where>
+	        <if test="id != null and id != ''">
+	            id IN ${id}
+	        </if>
+	    </where>
+	</update>
+	
+	<!-- 更新平台 -->
+	<update id="updPlatformBankFortune" parameterType="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+	    UPDATE 
+	    	gl.t_gl_platform_bank
+	    <set >
+			<if test="deductType != null" >
+	        	deduct_type = #{deductType},
+	      	</if>
+			<if test="bankCd != null" >
+	        	bank_cd = #{bankCd},
+	      	</if>
+	      	<if test="platformName != null" >
+	        	platform_name = #{platformName},
+	      	</if>
+	      	<if test="bankName != null" >
+	        	bank_name = #{bankName},
+	      	</if>
+	      	<if test="singleLimitMoney != null" >
+	        	single_limit_money = #{singleLimitMoney},
+	      	</if>
+	      	<if test="dayLimitMoney != null" >
+	        	day_limit_money = #{dayLimitMoney},
+	      	</if>
+	      	<if test="dayLimitTimes != null" >
+	        	day_limit_times = #{dayLimitTimes},
+	      	</if>
+	      	<if test="status != null" >
+	        	status = #{status}
+	      	</if>
+	    </set>
+	    <where>
+			<if test="sysId != null and sysId != ''" >
+	        	sys_id = #{sysId}
+	      	</if>
+	       	<if test="platformId != null and platformId != ''" >
+	        	AND platform_id = #{platformId}
+	      	</if>
+	    	<if test="bankId != null and bankId != ''" >
+	        	AND bank_id = #{bankId}
+	      	</if>
+	      	<if test="deductFlag != null and deductFlag != ''">
+	      		AND deduct_flag = #{deductFlag}
+	      	</if>
+	      	<if test="deductTypeOld != null and deductTypeOld != ''">
+	      		AND deduct_type = #{deductTypeOld}
+	      	</if>
+			<if test="id != null and id != ''" >
+	        	AND id = #{id}
+	      	</if>
+	    </where>
+	</update>
+	
+  <!-- 根据主键删除数据 -->
+  <delete id="deleteByPrimaryKey" parameterType="com.creditharmony.core.deduct.entity.PlatformBankEntity" >
+    delete from gl.t_gl_platform_bank
+    where platform_id = #{platformId}
+      and deduct_flag = #{deductFlag}
+      and deduct_type = #{deductType}
+      and bank_id = #{bankId}
+  </delete>
+
+</mapper>

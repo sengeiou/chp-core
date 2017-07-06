@@ -1,0 +1,300 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.cms.dao.ArticleDao">
+    
+	<sql id="cmsArticleColumns">
+		a.id AS "id",
+		a.category_id AS "category.id",
+		o.id AS "category.org.id",
+		o.parent_ids AS "category.org.parent_ids",		
+		a.title AS "title",
+		a.link AS "link",
+		a.color AS "color",
+		a.image AS "image",
+		a.keywords AS "keywords",
+		a.description AS "description",
+		a.weight AS "weight",
+		a.weight_date AS "weightDate",
+		a.hits AS "hits",
+		a.posid AS "posid",
+		a.custom_content_view AS "customContentView",
+		a.view_config AS "viewConfig",
+		a.create_by AS "createBy",
+		a.create_time AS "createTime",
+		a.modify_by AS "modifyBy",
+		a.modify_time AS "modifyTime",
+		a.remarks AS "remarks",
+		a.del_flag AS "delFlag",
+		c.name AS "category.name",
+		u.name AS "user.name"		
+	</sql>
+	
+	<sql id="cmsArticleJoins">
+		JOIN gl.t_gl_cms_category c ON c.id = a.category_id
+		JOIN gl.t_gl_org o ON o.id = c.org_id
+		JOIN gl.t_gl_user u ON u.id = a.create_by
+	</sql>
+    
+	<select id="get" resultType="com.creditharmony.core.cms.entity.Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.cms.entity.Article" parameterType="map">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{delFlag}
+			<if test="title != null and title != ''">
+				AND a.title LIKE '%'||#{title}||'%'
+			</if>
+			<if test="posid != null and posid != ''">
+				AND a.posid LIKE '%'||#{posid}||'%'
+			</if>
+			<if test="category.id != null and category.id != ''">
+				AND (a.category_id = #{category.id}
+				<if test="category.parentIds != null and category.parentIds != ''">
+					or c.parent_ids like '%,'||#{category.id}||',%'
+				</if>)
+			</if>
+			<if test="image != null and image != ''">
+				AND a.image  = #{image}
+			</if>
+			<if test="createBy != null and createBy != null and createBy != ''">
+				AND a.create_by  = #{createBy}
+			</if>
+			<!-- ${sqlMap.dsf}-->
+		</where>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.modify_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.cms.entity.Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL}
+		</where>		
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.weight DESC, a.modify_time DESC
+			</otherwise>
+		</choose>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_cms_article(
+			id,
+			category_id,
+			title,
+			link,
+			color,
+			image,
+			keywords,
+			description,
+			weight,
+			weight_date,
+			hits,
+			posid,
+			custom_content_view,
+			view_config,
+			push_flag,
+			release_time,
+			create_by,
+			create_time,
+			modify_by,
+			modify_time,
+			remarks,
+			del_flag
+		) VALUES (
+			#{id},
+			#{category.id},
+			#{title},
+			#{link},
+			#{color},
+			#{image},
+			#{keywords},
+			#{description},
+			#{weight},
+			#{weightDate},
+			#{hits},
+			#{posid},
+			#{customContentView},
+			#{viewConfig},
+			#{pushFlag},
+			#{releaseTime},
+			#{createBy},
+			#{createTime},
+			#{modifyBy},
+			#{modifyTime},
+			#{remarks},
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_cms_article SET 	
+			category_id = #{category.id},
+			title = #{title},
+			link = #{link},
+			color = #{color},
+			image = #{image},
+			keywords = #{keywords},
+			description = #{description},
+			weight = #{weight},
+			weight_date = #{weightDate},
+			hits = #{hits},
+			posid = #{posid},
+			custom_content_view = #{customContentView},
+			view_config = #{viewConfig},
+			push_flag = #{pushFlag},
+			release_time = #{releaseTime},
+			create_time = #{createTime},
+			modify_by = #{modifyBy},
+			modify_time = #{modifyTime},
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateDelFlag">
+		UPDATE gl.t_gl_cms_article SET 
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_cms_article SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+	<select id="findByIdIn" resultType="com.creditharmony.core.cms.entity.Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		from gl.t_gl_cms_article a where 
+		<where>
+			id in (${id});
+		</where>		
+	</select>
+ 
+	<update id="updateExpiredWeight">
+		update gl.t_gl_cms_article SET
+			 weight = 0
+		WHERE weight <![CDATA[ > 0 ]]>  AND weight_date  &lt; now()  AND weight_date   
+		<![CDATA[ >= #{beginDate} ]]>
+	</update>
+	
+	<update id="updateHitsAddOne">
+		update gl.t_gl_cms_article set
+			 hits = hits+1
+		 WHERE id = #{id}
+	</update>
+	
+	<select id="findStats" resultType="com.creditharmony.core.cms.entity.Category">
+		select max(c.id) AS "id",
+		       max(c.name) AS "name",
+		       max(cp.id) AS "parent.id",
+		       max(cp.name) AS "parent.name",
+		       count(*) AS "cnt",
+		       sum(a.hits) AS "hits",
+		       max(a.modify_time) as "modifyTime",
+		       max(o.id) AS "org.id",
+		       max(o.name) AS "org.name"
+		  FROM gl.t_gl_cms_article a
+		  RIGHT JOIN gl.t_gl_cms_category c ON c.id = a.category_id
+		  JOIN gl.t_gl_cms_category cp ON c.parent_id = cp.id
+		  JOIN gl.t_gl_org o ON o.id = c.org_id
+		<where>
+			a.del_flag = #{DEL_FLAG_NORMAL} 
+			AND c.site_id = #{site.id}
+			<if test="org.id != null and org.id != ''">
+				AND (c.org_id = #{org.id} OR o.parent_ids like CONCAT('%', #{org.id}, '%'))
+			</if>
+			<if test="beginDate != null and beginDate != ''">
+				AND a.modify_time <![CDATA[ >= #{beginDate} ]]>
+			</if>
+			<if test="endDate != null and endDate != ''">
+				AND a.modify_time <![CDATA[ <= #{endDate} ]]>
+			</if>
+			<if test="id != null and id != ''">
+				AND (c.id = #{id} OR c.parent_ids LIKE CONCAT('%', #{id}, '%'))
+			</if>
+			group by cp.sort, cp.id, c.sort, c.id
+			order by cp.sort, cp.id, c.sort, c.id
+		</where>		
+	</select>
+
+	<select id="findByBean" resultType="com.creditharmony.core.cms.entity.Article">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+				a.release_time =#{releaseTime}
+				and a.push_flag =#{pushFlag}
+		</where>
+	</select>
+	
+		<select id="find" resultType="com.creditharmony.core.cms.entity.Article" parameterType="map">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		WHERE a.id = #{id}
+		<if test="orgId != null and orgId != ''">
+			AND c.org_id = orgId or 
+		</if>
+	</select>
+	
+	<select id="findListByMap" resultType="com.creditharmony.core.cms.entity.Article" parameterType="map">
+		SELECT 
+			<include refid="cmsArticleColumns"/>
+		FROM gl.t_gl_cms_article a
+		<include refid="cmsArticleJoins"/>
+		<where>
+		    <if test="delFlag != null and delFlag != ''">
+				AND a.del_flag = #{delFlag}
+			</if>
+			<if test="posid != null and posid != ''">
+				AND a.posid LIKE '%'||#{posid}||'%'
+			</if>
+			<if test="image != null and image != ''">
+				AND a.image  = #{image}
+			</if>
+			<if test="categoryId != null and categoryId!= ''">
+				AND (a.category_id = #{categoryId}
+				<if test="categoryParentIds != null and categoryParentIds != ''">
+					or c.parent_ids like '%,'||#{categoryParentIds}||',%'
+				</if>)
+			</if>
+			<if test="orgIdList != null and orgIdList.size>0">
+				AND c.org_id in 
+				<foreach collection="orgIdList" item="item" open="(" separator="," close=")">
+					#{item}
+				</foreach>
+			</if>
+		</where>
+		<choose>
+			<otherwise>
+				ORDER BY a.weight DESC, a.modify_time DESC
+			</otherwise>
+		</choose>
+	</select>
+</mapper>

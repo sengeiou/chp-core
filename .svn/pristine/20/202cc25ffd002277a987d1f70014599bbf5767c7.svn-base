@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.users.dao.AdditionalUserDao">
+
+	<resultMap id="BaseResultMap" type="com.creditharmony.core.users.entity.AdditionalUser">
+		<id column="id" jdbcType="VARCHAR" property="id" />
+    	<result column="login_name" jdbcType="VARCHAR" property="loginName" />
+    	<result column="mobile" jdbcType="VARCHAR" property="mobile" />
+    	<result column="system_flag" jdbcType="VARCHAR" property="systemFlag" />
+    	<result column="user_code" jdbcType="VARCHAR" property="userCode" />
+    	<result column="name" jdbcType="VARCHAR" property="name" />
+	</resultMap>
+	
+	
+	<sql id="Base_Column_List">
+	r.id,
+	r.login_name,
+	r.mobile,
+	r.system_flag,
+	r.create_by,
+	r.create_time,
+	r.user_code,
+	r.name
+	</sql>
+
+    
+  <select id="selectAdditionalUser"  resultType="com.creditharmony.core.users.entity.AdditionalUser">
+    select 
+    <include refid="Base_Column_List" />
+    from gl.t_gl_additional_user r
+    WHERE r.login_name = #{loginName} and r.mobile = #{mobile}
+  </select>
+  
+  <select id="selectAdditionalUserByLoginName"  resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from gl.t_gl_additional_user r
+    WHERE r.login_name = #{loginName}
+  </select>  
+
+
+	
+</mapper>

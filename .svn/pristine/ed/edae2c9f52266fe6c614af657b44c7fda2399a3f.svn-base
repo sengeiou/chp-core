@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.permission.dao.AdditionalPermissionDao">
+	<select id="get" resultType="com.creditharmony.core.permission.entity.AdditionalPermission">
+		SELECT
+			id,type,status,scope
+		FROM gl.t_gl_additional_permission 
+		WHERE id = #{id}
+	</select>
+	
+	<select id="findByParams" resultType="com.creditharmony.core.permission.entity.AdditionalPermission" parameterType="java.util.Map">
+		SELECT
+			id,type,status,scope
+		FROM gl.t_gl_additional_permission 
+		<where>
+			<if test="type != null and type != ''">
+				type = #{type}
+			</if>
+			<if test="status != null and status != ''">
+				and status = #{status}
+			</if>
+		</where>
+	</select>
+	
+	<select id="list" resultType="com.creditharmony.core.permission.entity.ex.AdditionalPermissionEx" parameterType="com.creditharmony.core.permission.entity.AdditionalPermission">
+		SELECT
+			ap.id,ap.type,ap.status,ap.scope,o.name as orgName
+		FROM gl.t_gl_additional_permission ap 
+		join gl.t_gl_org o on o.id = ap.id
+		<where>
+			<if test="id != null and id != ''">
+				ap.id = #{id}
+			</if>
+		</where>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_additional_permission(
+			id,
+			type,
+			status,
+			scope,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time
+		) VALUES (
+			#{id}, 
+			#{type}, 
+			#{status}, 
+			#{scope}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_additional_permission SET 
+			type = #{type}, 
+			status = #{status}, 
+			scope = #{scope}, 
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		delete from gl.t_gl_additional_permission where id = #{id}
+	</update>
+	
+</mapper>

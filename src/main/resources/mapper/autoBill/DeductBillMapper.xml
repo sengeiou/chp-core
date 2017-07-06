@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.autoBill.dao.DeductBillDao">
+
+	 <sql id="t_gl_deduct_his_detail">
+	  (select * FROM gl.t_gl_deduct_his_detail_cf01 union all 
+	   select * FROM gl.t_gl_deduct_his_detail_hj01 union all 
+	   select * FROM gl.t_gl_deduct_his_detail_hj02 union all 
+	   select * FROM gl.t_gl_deduct_his_detail_hj04 union all 
+	   select * FROM gl.t_gl_deduct_his_detail_zj01 
+	  )
+	 </sql>
+	 <sql id="t_gl_deduct_his">
+	  (select * FROM gl.t_gl_deduct_his_cf01 union all 
+	   select * FROM gl.t_gl_deduct_his_hj01 union all 
+	   select * FROM gl.t_gl_deduct_his_hj02 union all 
+	   select * FROM gl.t_gl_deduct_his_hj04 union all 
+	   select * FROM gl.t_gl_deduct_his_zj01 
+	  )
+	 </sql>
+
+
+	  <sql id="innerSelect">
+    	select case when c.bank_time is null then a.modify_time else c.bank_time end as "bill_time",a.creat_time as "send_time",a.platform_id as "platform_type",a.sys_id AS "bill_type",
+		       b.business_id as "business_no",a.batch_no as "order_num",a.order_no as "order_no",a.split_id as "item_no",b.account_name as "custom_name",
+		       a.split_amount/100::numeric as "money",c.status as "platform_res",c.money as "balance_amount",c.status as "balance_res",a.deduct_type,
+		       case when a.rtn_cd=#{billResultSuccessCode} then #{billResultSuccess} when a.rtn_cd is null then #{billResultProcessing} else #{billResultFailure} end as "balance_status",
+		       case when (a.rtn_cd=#{billResultSuccessCode} and c.status=#{platformresSuccess}) or (a.rtn_cd!=#{billResultSuccessCode} and a.rtn_cd is not null 
+		       and c.status=#{platformresFailure}) or (a.rtn_cd!=#{billResultSuccessCode} and c.status is null) then #{billStatusSame} when a.rtn_cd is null then #{billStatusNone} else #{billStatusDifferent} end as "bill_status" 
+		from <include refid="t_gl_deduct_his_detail"/> a left join <include refid="t_gl_deduct_his"/> b on a.request_id=b.request_id 
+		left join gl.t_gl_autobill_temp c on a.split_id=c.order_no and c.type=#{autoBillType} where a.bill_status!=#{billStatusSame} or a.bill_status is null
+     </sql>
+     
+	  <sql id="whereSql">
+	    a."bill_time" between #{startTime} and #{endTime}
+    	<if test="sendDate!=null and sendDate!=''"> and to_char(a."send_time",'YYYY-MM-DD')=#{sendDate} </if>
+		<if test="billType!=null and billType!=''"> and a."bill_type" like #{billType}||'%'</if>
+		<if test="platformType!=null and platformType!=''"> and a."platform_type" = #{platformType}</if>
+		<if test="customName!=null and customName!=''"> and a."custom_name" like '%'||#{customName}||'%'</if>
+		<if test="businessNo!=null and businessNo!=''"> and a."business_no" like '%'||#{businessNo}||'%'</if>
+		<if test="orderNo!=null and orderNo!=''"> and a."order_no" like '%'||#{orderNo}||'%'</if>
+		<if test="itemNo!=null and itemNo!=''"> and a."item_no" like '%'||#{itemNo}||'%'</if>
+		<if test="balanceStatus!=null and balanceStatus!=''"> and a."balance_status" = #{balanceStatus}</if>
+		<if test="platformRes!=null and platformRes!=''"> and a."platform_res" = #{platformRes}</if>
+		<if test="billStatus!=null and billStatus!=''"> and a."bill_status" = #{billStatus}</if>
+		<if test="itemList !=null and itemList.size > 0"> and a."item_no" in 
+			<foreach collection="itemList" item="item" open="(" separator="," close=")">
+			#{item}
+		    </foreach>
+        </if>
+     </sql>
+
+	<select id="findDeductBill" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+		select * from (<include refid="innerSelect"/>) a
+		WHERE  <include refid="whereSql"/>
+		order by a."bill_status" desc
+	</select>
+	
+	<!-- 检索已对账数据用 -->
+	<sql id="innerSelectBilled">
+    	select case when c.bank_time is null then a.modify_time else c.bank_time end as "bill_time",a.creat_time as "send_time",a.platform_id as "platform_type",a.sys_id AS "bill_type",
+		       b.business_id as "business_no",a.batch_no as "order_num",a.order_no as "order_no",a.split_id as "item_no",b.account_name as "custom_name",
+		       a.split_amount/100::numeric as "money",c.status as "platform_res",c.money as "balance_amount",c.status as "balance_res",a.deduct_type,
+		       case when a.rtn_cd=#{billResultSuccessCode} then #{billResultSuccess} when a.rtn_cd is null then #{billResultProcessing} else #{billResultFailure} end as "balance_status",
+		       case when (a.rtn_cd=#{billResultSuccessCode} and c.status=#{platformresSuccess}) or (a.rtn_cd!=#{billResultSuccessCode} and a.rtn_cd is not null 
+		       and c.status=#{platformresFailure}) or (a.rtn_cd!=#{billResultSuccessCode} and c.status is null) then #{billStatusSame} when a.rtn_cd is null then #{billStatusNone} else #{billStatusDifferent} end as "bill_status" 
+		from 
+			<include refid="t_gl_deduct_his_detail"/> a 
+			left join <include refid="t_gl_deduct_his"/> b
+				on a.request_id = b.request_id 
+			left join gl.t_gl_autobill_his c 
+				on a.split_id=c.order_no
+		where 
+			a.bill_status = #{billStatusSame}
+	</sql>	
+	
+	<!-- 检索已对账数据 -->
+	<select id="findDeductBilled" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+		select 
+			* 
+		from 
+			(<include refid="innerSelectBilled"/>) a
+		where  
+			<include refid="whereSql"/>
+		order by 
+			a."bill_status" desc
+	</select>
+    
+	<select id="findDeductBillForTotalMoney" resultType="java.lang.Double" parameterType="map">
+		select sum(a."money") from (<include refid="innerSelect"/>) a
+		WHERE <include refid="whereSql"/>
+	</select>
+	
+	<select id="findDeductBillForBatchNo" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+		select distinct a."order_num",a."order_no",a."send_time",a.deduct_type from (<include refid="innerSelect"/>) a
+		WHERE a."order_num" is not null and a."order_no" is not null and  <include refid="whereSql"/>
+	</select>
+</mapper>

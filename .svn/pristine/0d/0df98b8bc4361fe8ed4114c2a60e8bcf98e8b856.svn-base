@@ -1,0 +1,359 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.MenuDao">
+	
+	<sql id="menuColumns">
+		a.id,
+		a.module_menu_id AS "moduleMenu.id",
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.name,
+		a.href,
+		a.target,
+		a.icon,
+		a.sort,
+		a.is_show,
+		a.permission,
+		a.remarks,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		p.name AS "parent.name",
+		mm.name AS "moduleMenu.name"
+	</sql>
+	
+	<sql id="menuJoins">
+		LEFT JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+    </sql>
+	
+	<select id="get" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findMenu" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="parent!=null and parent.id!=''"> and a.parent_id = #{parent.id}</if>
+		<if test="moduleMenu!=null and moduleMenu.id!=''"> and a.module_menu_id = #{moduleMenu.id}</if>
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findAllByParams" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		WHERE a.del_flag = #{delFlag}
+		<if test="moduleMenuId!=null and moduleMenuId!=''"> and a.module_menu_id = #{moduleMenuId}</if>
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		WHERE a.del_flag = #{delFlag}
+		<if test="moduleMenu!=null and moduleMenu.id!=''"> and a.module_menu_id = #{moduleMenu.id}</if>
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT
+			a.id,
+			a.parent_id AS "parent.id",
+			a.parent_ids
+		FROM gl.t_gl_menu a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findByUserId" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id and rmm.menu_id = a.id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} and ur.org_id=#{orgId}
+		JOIN gl.t_gl_user u ON u.id = ur.user_id AND u.id = #{userId}
+		WHERE a.del_flag = #{delFlag} AND r.del_flag = #{delFlag} AND u.del_flag = #{delFlag} 
+		<if test="moduleId!=null and moduleId!=''"> and rmm.module_id = #{moduleId}</if>
+		ORDER BY a.sort
+
+	</select>
+	
+	<select id="findByUserIdAndParentId" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id and rmm.menu_id = a.id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} and ur.org_id=#{orgId}
+		JOIN gl.t_gl_user u ON u.id = ur.user_id AND u.id = #{userId}
+		WHERE a.del_flag = #{delFlag} AND r.del_flag = #{delFlag} AND u.del_flag = #{delFlag} 
+		AND a.parent_ids NOT LIKE CONCAT('%', #{parentId}, '%') and a.id != #{parentId}
+		<if test="moduleId!=null and moduleId!=''"> and rmm.module_id = #{moduleId}</if>
+		ORDER BY a.sort
+	</select>
+	
+	
+	<select id="getMenuListUserOwn" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+			,
+			ur.org_id as orgId
+			,
+			md.url as moduleUrl,
+			md.name as moduleName
+		FROM gl.t_gl_menu a
+		JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_module md ON md.id = mm.module_id 
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id and rmm.menu_id = a.id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} 
+		JOIN gl.t_gl_user u ON u.id = ur.user_id AND u.id = #{userId}
+		JOIN (select (length(parent_ids) - length(replace(parent_ids,',',''))) menuLevel,id from gl.t_gl_menu) menu on menu.id = a.id
+		WHERE a.del_flag = #{delFlag} AND r.del_flag = #{delFlag} AND u.del_flag = #{delFlag} and menu.menuLevel > #{menuLevel,jdbcType=INTEGER}
+		ORDER BY moduleUrl, a.sort
+	</select>
+	
+	<select id="getMenuListUserOwnNew" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+			,
+			ur.org_id as orgId
+			,
+			md.url as moduleUrl,
+			md.name as moduleName
+		FROM gl.t_gl_menu a
+		JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_module md ON md.id = mm.module_id 
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id and rmm.menu_id = a.id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} 
+		WHERE a.del_flag = #{delFlag} AND r.del_flag = #{delFlag} 
+		AND array_length(regexp_split_to_array(a.parent_ids,','),1) > #{menuLevel,jdbcType=INTEGER}
+		ORDER BY moduleUrl, a.sort
+	</select>
+	
+	<select id="getMenuListUserOwnDefault" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+			,
+			ur.org_id as orgId
+			,
+			md.url as moduleUrl,
+			md.name as moduleName
+		FROM gl.t_gl_menu a
+		JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_module md ON md.id = mm.module_id 
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id and rmm.menu_id = a.id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user u ON u.id = #{userId}
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} and ur.org_id=u.department_id
+		JOIN (select (length(parent_ids) - length(replace(parent_ids,',',''))) menuLevel,id from gl.t_gl_menu) menu on menu.id = a.id
+		WHERE a.del_flag = #{delFlag} AND r.del_flag = #{delFlag} AND u.del_flag = #{delFlag} and menu.menuLevel > #{menuLevel,jdbcType=INTEGER}
+		ORDER BY moduleUrl, a.sort
+	</select>
+	
+	<select id="getRootMenu" resultType="com.creditharmony.core.users.entity.Menu">
+		SELECT DISTINCT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		LEFT JOIN gl.t_gl_menu p ON p.id = a.parent_id
+		JOIN gl.t_gl_module_menu mm ON mm.id = a.module_menu_id
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.module_id = mm.module_id
+		JOIN gl.t_gl_role r ON r.id = rmm.role_id AND r.useable='1'
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = r.id and ur.user_id=#{userId} and ur.org_id=#{orgId}
+		JOIN gl.t_gl_user u ON u.id = ur.user_id AND u.id = #{userId}
+		WHERE a.del_flag = #{delFlag}
+		<if test="parentId!=null and parentId!=''"> and a.parent_id = #{parentId}</if>
+		<if test="moduleMenuId!=null and moduleMenuId!=''"> and a.module_menu_id = #{moduleMenuId}</if>
+		ORDER BY a.sort
+	</select>
+	
+	<select id="findMenuByParams" resultType="com.creditharmony.core.users.entity.Menu" parameterType="java.util.Map">
+		SELECT
+			<include refid="menuColumns"/>
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		JOIN gl.t_gl_module sm ON sm.id = mm.module_id and sm.id = #{moduleId}
+		WHERE a.del_flag = #{delFlag}
+		ORDER BY a.id
+	</select>
+	
+	<select id="findAllByModuleMenuId" resultType="map" parameterType="java.util.Map">
+		SELECT
+			a.id,
+			a.module_menu_id AS moduleMenuId,
+			a.parent_id AS parentid,
+			a.parent_ids AS parentIds,
+			a.name
+		FROM gl.t_gl_menu a
+		where a.module_menu_id = #{moduleMenuId} and a.del_flag = #{delFlag}
+		order by a.parent_ids,a.sort 
+	</select>
+	
+	<select id="findMenuByRoleId" resultType="com.creditharmony.core.users.entity.Menu" parameterType="java.util.Map">
+		SELECT
+			<include refid="menuColumns"/>,rmm.data_auth
+		FROM gl.t_gl_menu a
+		<include refid="menuJoins"/>
+		JOIN gl.t_gl_role_module_menu rmm ON rmm.menu_id = a.id and rmm.role_id=#{roleId}
+		WHERE a.del_flag = #{delFlag}
+	</select>
+	
+	<select id="findResourceByParams" resultType="com.creditharmony.core.users.entity.Resource" parameterType="java.util.Map">
+		SELECT
+			id,module_id,menu_id,type,res_key,res_name,del_flag 
+		FROM gl.t_gl_resource a WHERE 1=1 
+		<if test="moduleId !=null and moduleId !=''"> and a.module_id = #{moduleId}</if>
+		<if test="type !=null and type !=''"> and a.type = #{type}</if>
+		and a.del_flag = #{delFlag} 
+	</select>
+	
+	<select id="findResourceAuthByParams" resultType="com.creditharmony.core.users.entity.ResourceAuth" parameterType="java.util.Map">
+		SELECT
+			a.id,a.role_id,a.menu_id,a.res_id,a.has_display,a.has_edit,a.del_flag,
+			b.id AS "resource.id",b.module_id AS "resource.moduleId",b.menu_id AS "resource.menuId",b.type AS "resource.type",b.res_key AS "resource.resKey",b.res_name AS "resource.resName" 
+		FROM gl.t_gl_resource_auth a LEFT JOIN gl.t_gl_resource b on a.res_id=b.id
+		WHERE 1=1
+		<if test="roleId !=null and roleId !=''"> and a.role_id = #{roleId}</if>
+		<if test="moduleId !=null and moduleId !=''"> and b.module_id = #{moduleId}</if>
+		<if test="type !=null and type !=''"> and b.type = #{type}</if>
+		and a.del_flag = #{delFlag} 
+	</select>
+	
+	<select id="findResourceAuth" resultType="com.creditharmony.core.users.entity.ResourceAuth" parameterType="java.util.Map">
+		SELECT distinct a.id, a.has_display, a.has_edit,b.res_key as "resource.resKey"
+		FROM gl.t_gl_resource_auth a LEFT JOIN gl.t_gl_resource b on a.res_id=b.id
+		WHERE a.role_id in (select uro.role_id from gl.t_gl_user_role_org uro where uro.user_id = #{userId} and uro.org_id = #{orgId})
+		<if test="type !=null and type !=''"> and b.type = #{type}</if>
+		<if test="menuId !=null and menuId !=''"> and a.menu_id = #{menuId} </if>
+		<if test="resKey !=null and resKey !=''"> and b.res_key = #{resKey} </if>
+		and a.del_flag = #{delFlag} 
+	</select>
+	
+	 <select id="findResourceAuthByRole" resultType="String" parameterType="java.util.HashMap">
+		SELECT r.res_key from t_gl_resource r,t_gl_resource_auth ra
+		WHERE r.id=ra.res_id and ra.del_flag = #{delFlag} 
+		and r.del_flag = #{delFlag} and ra.role_id in
+		  <foreach collection="role" item="role"
+            open="(" close=")" separator=",">
+            #{role.id}
+        </foreach>
+	</select>
+	
+	
+	<select id="findResourceAuthNotIn" resultType="String" parameterType="java.util.Map">
+		select distinct res_key  from gl.t_gl_resource a where 
+		id not in (select res_id from gl.t_gl_resource_auth where menu_id=a.menu_id and role_id in (select uro.role_id from 
+		gl.t_gl_user_role_org uro where uro.user_id = #{userId} and uro.org_id = #{orgId}) )
+		<if test="type !=null and type !=''"> and a.type = #{type}</if>
+		 and a.menu_id = #{menuId} and a.del_flag = #{delFlag} 
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_menu(
+			id, 
+			module_menu_id,
+			parent_id, 
+			parent_ids, 
+			name, 
+			href, 
+			target, 
+			icon, 
+			sort, 
+			is_show, 
+			permission, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{moduleMenu.id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{name}, 
+			#{href}, 
+			#{target}, 
+			#{icon}, 
+			#{sort}, 
+			#{isShow}, 
+			#{permission}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_menu SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			name = #{name}, 
+			href = #{href}, 
+			target = #{target}, 
+			icon = #{icon}, 
+			sort = #{sort}, 
+			is_show = #{isShow}, 
+			permission = #{permission}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE gl.t_gl_menu SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateSort">
+		UPDATE gl.t_gl_menu SET 
+			sort = #{sort}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_menu SET 
+		   del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE CONCAT('%,', #{id}, ',%')
+	</update>
+	
+	
+	<select id="queryRoleModuleMenu" resultType="com.creditharmony.core.users.entity.RoleModuleMenu" parameterType="com.creditharmony.core.users.entity.Role">
+		select * from  gl.t_gl_role_module_menu rmm
+		where rmm.role_id=#{id}
+	</select>
+	
+	<select id="queryResourceAuth" resultType="com.creditharmony.core.users.entity.ResourceAuth" parameterType="com.creditharmony.core.users.entity.Role">
+		select ra.* from  gl.t_gl_role_module_menu rmm,t_gl_resource_auth ra
+		where rmm.role_id=#{id} and rmm.role_id=ra.role_id and rmm.menu_id=ra.menu_id and del_flag='0'
+	</select>
+</mapper>

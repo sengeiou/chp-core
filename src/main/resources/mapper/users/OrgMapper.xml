@@ -1,0 +1,566 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.OrgDao">
+
+	<sql id="orgColumns">
+		a.id,
+		a.parent_id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.area_id AS "area.id",
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		ad.id AS "typeId",
+		a.party_type,
+		a.grade,
+		a.address, 
+		a.zip_code, 
+		a.master, 
+		a.phone, 
+		a.fax, 
+		a.email, 
+		a.remarks,
+		a.create_by AS "createBy",
+		a.create_time,
+		a.modify_by AS "modifyBy",
+		a.modify_time,
+		a.del_flag,
+		a.useable AS useable,
+		a.province_id,
+		a.city_id,
+		a.district_id,
+		a.store_code,
+		a.car_loan_code,
+		a.system_flag,
+		a.frozen_user,
+		a.credit_paperless,
+		a.car_paperless,
+		p.name AS "parent.name",
+		ar.name AS "area.name",
+		ar.parent_ids AS "area.parentIds"
+	</sql>
+	
+	<sql id="orgJoins">
+		LEFT JOIN gl.t_gl_org p ON p.id = a.parent_id
+		LEFT JOIN gl.t_gl_area ar ON ar.id = a.area_id
+		LEFT JOIN gl.t_gl_dict ad ON ad.value = p.type and ad.type='com_org_type'
+    </sql>
+	
+	<select id="get" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByParams" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE 1=1
+		<if test="code!=null and code!=''">
+			AND a.code = #{code} 
+		</if>
+		<if test="name!=null and name!=''">
+			AND a.name = #{name} 
+		</if>
+		<if test="id != null and id != ''">
+			AND a.id = #{id}
+		</if>
+		<if test="type != null and type != ''">
+			AND a.type = #{type}
+		</if>
+		<if test="delFlag != null and delFlag != ''">
+			AND a.del_flag = #{delFlag}
+		</if>
+	</select>
+	
+	<select id="findByCode" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE 1=1
+		<if test="code!=null and code!=''">
+			AND a.code = #{code} 
+		</if>
+	</select>
+	
+    <!-- 检索机构 -->
+    <select id="selOrg" resultType="com.creditharmony.core.users.entity.Org" parameterType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a 
+		<include refid="orgJoins"/>
+		WHERE 1=1
+		<if test="type != null and type != ''">
+			AND a.type = #{type}
+		</if>
+		<if test="id != null and id != ''">
+			AND a.id = #{id}
+		</if>
+		<if test="name!=null and name!=''">
+			AND a.name = #{name} 
+		</if>
+		<if test="delFlag!=null and delFlag!=''">
+			AND a.del_flag = #{delFlag} 
+		</if>
+		<if test="parentIds != null and parentIds != ''">
+               AND a.parent_ids LIKE  #{parentIds}||'%'
+           </if>
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		OR a.id = #{currentUser.department.id}
+		ORDER BY a.id
+	</select>
+			
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="typeId!=null and typeId!=''">
+			AND a.type= #{typeId} 
+		</if>
+		ORDER BY a.id
+	</select>
+	
+	<!-- 查询所有的机构，包括删除状态的 ，供修正迁移数据使用-->
+	<select id="queryAll" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		ORDER BY a.id
+	</select>
+	
+	<!-- 查询所有的机构，包括删除状态的 ，供修正迁移数据使用-->
+	<select id="findByParentIds" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE 1=1
+		<if test="code!=null and code!=''">
+			AND a.code like '%'||#{code}||'%' 
+		</if>
+		<if test="name!=null and name!=''">
+			AND a.name like '%'||#{name}||'%' 
+		</if>
+		AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.id
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		<if test="code!=null and code!=''">
+			AND a.code like '%'||#{code}||'%' 
+		</if>
+		<if test="name!=null and name!=''">
+			AND a.name like '%'||#{name}||'%' 
+		</if>
+		AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.id
+	</select>
+	
+	<select id="findByParams" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} 
+		<if test="id !=null and id!=''">
+			AND (a.id= #{id} or a.parent_id = #{id}) or a.parent_id= #{rootParentId}
+		</if>
+		<if test="id==null or id==''">
+			AND a.parent_ids LIKE #{parentIds}
+		</if>
+		ORDER BY a.id
+	</select>
+	
+	<select id="loadByParams" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		WHERE a.del_flag = #{deleteFlag} 
+		<if test="id !=null and id!=''">
+			AND a.id = #{id}
+		</if>
+		<if test="parentId!=null and parentId!=''">
+			AND a.parent_id = #{parentId}
+		</if>
+		ORDER BY a.id
+	</select>
+	
+	<select id="queryByParams" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT 
+			<include refid="orgColumns"/>
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		JOIN gl.t_gl_user_role_org ug ON ug.org_id = a.id
+		WHERE 1=1
+		<if test="userId != null and userId != ''">
+			AND ug.user_id = #{userId}
+		</if>
+	</select>
+	
+	<select id="queryByUserId" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT 
+			a.id,
+			a.parent_id,
+			a.parent_id AS "parent.id",
+			a.parent_ids,
+			a.area_id AS "area.id",
+			a.area_id AS "areaId",
+			a.code,
+			a.name,
+			a.sort,
+			ug.role_id AS "type",
+			a.party_type,
+			a.grade,
+			a.address, 
+			a.zip_code, 
+			a.master, 
+			a.phone, 
+			a.fax, 
+			a.email, 
+			a.remarks,
+			a.create_by AS "createBy",
+			a.create_time,
+			a.modify_by AS "modifyBy",
+			a.modify_time,
+			a.del_flag,
+			a.useable AS useable,
+			a.province_id,
+			a.city_id,
+			a.district_id,
+			a.credit_paperless,
+			a.car_paperless,
+			p.name AS "parent.name",
+			ar.name AS "area.name",
+			ar.parent_ids AS "area.parentIds"
+		FROM gl.t_gl_org a
+		<include refid="orgJoins"/>
+		JOIN gl.t_gl_user_role_org ug ON ug.org_id = a.id
+		WHERE 1=1
+		<if test="userId != null and userId != ''">
+			AND ug.user_id = #{userId}
+		</if>
+	</select>
+	
+    <select id="findStoresNotAssigned" resultType="com.creditharmony.core.users.entity.Org" parameterType="java.util.Map">
+    	SELECT o.ID,o.NAME,ar.name AS "area.name"
+    	FROM gl.t_gl_org o LEFT JOIN gl.t_gl_area ar ON ar.id = o.area_id
+		WHERE o.ID NOT IN
+		(SELECT rm.DOMAIN_ID FROM
+		gl.t_gl_relationship_maintain rm where rm.SOURCE_TYPE = #{sourceType})
+		<if test="org.name != null and org.name != ''">
+                AND o.name like CONCAT('%', #{org.name}, '%')
+        </if>
+		<if test="area.name != null and area.name != ''">
+                AND ar.name like '%'||#{area.name}||'%'
+        </if>  
+		<if test="org.type != null and org.type != ''">
+				AND o.type = #{org.type}
+		</if>
+	   	<if test="org.delFlag != null and org.delFlag != ''"> and o.del_flag = #{org.delFlag}</if>
+		
+    </select>
+    
+    <!-- 当前审核小组分到的所有门店 -->
+    <sql id="ContractGroupStores">
+   		select rm.domain_id
+     	from gl.t_gl_relationship_maintain rm 
+     	inner join gl.t_gl_org o
+     		ON rm.source_id = o.id
+     	inner join gl.t_gl_user_role_org uro 
+     		 ON uro.org_id = o.id 
+     	inner join gl.t_gl_role r
+     		 ON r.id = uro.role_id
+     	where o.id = #{org.id}
+     	and   o.type = #{org.type}
+     	and   uro.user_id = #{user.id}
+     	and   r.role_type = #{role.roleType}
+    </sql>
+    <!-- 查找当前审核小组已有所有的门店 -->
+     <select id="getContractGroupStores" resultType="com.creditharmony.core.users.entity.Org" parameterType="java.util.Map">
+     	
+     	select oo.ID,oo.name,ar.name AS "area.name"
+     	from gl.t_gl_org oo
+     	LEFT JOIN gl.t_gl_area ar ON ar.id = oo.area_id
+     	where oo.id in
+     	(
+     	<include refid="ContractGroupStores"/>
+     	)
+        <if test="org.delFlag != null and org.delFlag != ''"> 
+        	and oo.del_flag = #{org.delFlag}
+        </if>
+     
+     </select>
+    <!-- 查找当前审核小组已有的但未分派给组员的门店 -->
+     <select id="findContractGroupStoresNotAssigned" resultType="com.creditharmony.core.users.entity.Org" parameterType="java.util.Map">
+     	
+     	select oo.ID,oo.name,ar.name AS "area.name"
+     	from gl.t_gl_org oo
+     	LEFT JOIN gl.t_gl_area ar ON ar.id = oo.area_id
+     	where oo.id in
+     	(
+     	<include refid="ContractGroupStores"/>
+     	)
+     	and  oo.id not in 
+     	(select domain_id from gl.t_gl_relationship_maintain rm2 where rm2.source_type = #{sourceType})
+     	
+     	<if test="store.name != null and store.name != ''">
+                AND oo.name like '%'||#{store.name}||'%'  	
+        </if>
+		<if test="area.name != null and area.name != ''">
+                AND ar.name like '%'||#{area.name}||'%'
+        </if>
+        <if test="org.delFlag != null and org.delFlag != ''"> 
+        	and oo.del_flag = #{org.delFlag}
+        </if>
+     
+     </select>
+    
+    <select id="findOrgsByParams" resultType="com.creditharmony.core.users.entity.Org" >
+    	SELECT ID,NAME
+    	FROM gl.t_gl_org
+    	where 1=1
+    	<if test="departmentId != null and departmentId != ''"> and (id= #{departmentId} or parent_ids like '%' || #{departmentId} || '%')</if>
+    	<if test="delFlag != null and delFlag != ''"> and del_flag = #{delFlag}</if>
+    	<if test="type != null and type != ''"> and type = #{type}</if>
+    	<if test="name != null and name != ''"> and name like '%'||#{name}||'%'</if>
+    	<if test="children != null and children.size > 0">and (
+    	<foreach collection="children" item="item"  separator="or">
+			 name like '%'||#{item.name}||'%'
+		</foreach>
+		)
+		</if>
+    </select>
+    
+    <select id="findIpConfigByStoreCode" resultType="com.creditharmony.core.users.entity.Org" >
+    	SELECT ID,NAME
+    	FROM gl.t_gl_org
+    	where 1=1
+    	<if test="delFlag != null and delFlag != ''"> and del_flag = #{delFlag}</if>
+    	<if test="storeCode != null and storeCode != ''"> and (store_code = #{storeCode} or code = #{storeCode})</if>
+    </select>
+    
+	<insert id="insert">
+		INSERT INTO gl.t_gl_org(
+			id, 
+			parent_id, 
+			parent_ids, 
+			area_id, 
+			code, 
+			name, 
+			sort, 
+			type, 
+			party_type,
+			grade, 
+			address, 
+			zip_code, 
+			master, 
+			phone, 
+			fax, 
+			email, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			store_code,
+			car_loan_code,
+			del_flag,
+			useable,
+			frozen_user,
+			province_id,
+			city_id,
+			district_id,
+			credit_paperless,
+			car_paperless
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{area.id}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{partyType}, 
+			#{grade}, 
+			#{address}, 
+			#{zipCode}, 
+			#{master}, 
+			#{phone}, 
+			#{fax}, 
+			#{email}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{storeCode},
+			#{carLoanCode},
+			#{delFlag},
+			#{useable},
+			#{frozenUser},
+			#{provinceId},
+			#{cityId},
+			#{districtId},
+			#{creditPaperless},
+			#{carPaperless}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_org SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			area_id = #{area.id}, 
+			code = #{code}, 
+			name = #{name}, 
+			type = #{type}, 
+			party_type = #{partyType},
+			grade = #{grade}, 
+			address = #{address}, 
+			zip_code = #{zipCode}, 
+			master = #{master}, 
+			phone = #{phone}, 
+			fax = #{fax}, 
+			email = #{email}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			store_code = #{storeCode},
+			car_loan_code = #{carLoanCode},
+			useable=#{useable},
+			frozen_user=#{frozenUser},
+			province_id=#{provinceId},
+			city_id=#{cityId},
+			district_id=#{districtId},
+			credit_paperless=#{creditPaperless},
+			car_paperless=#{carPaperless}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE gl.t_gl_org SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateCarLoanCode">
+		UPDATE gl.t_gl_org 
+		SET car_loan_code = #{carLoanCode}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_org SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+    <!-- 检索员工关联机构 -->
+    <select id="selUserSubOrg" resultType="com.creditharmony.core.users.entity.Org">
+        SELECT 
+	        id,
+	        parent_id AS "parent.id",
+	        parent_ids,
+	        name,
+	        area_id 	        
+        FROM 
+            gl.t_gl_org 
+        <where>
+            <if test="parentIds != null and parentIds != ''">
+                (parent_ids LIKE CONCAT('%', #{parentIds}, '%') OR id = #{parentIds})
+            </if>
+            <if test="type != null and type != ''">
+                AND type = #{type}
+            </if>
+            <if test="parentIds != null and parentIds != ''">
+                AND del_flag = #{DEL_FLAG_NORMAL}
+            </if>         
+        </where>
+    </select>
+    
+    <select id="selUserOrgByUserId" parameterType="map" resultType="map">
+        SELECT distinct
+	        id AS "orgId",
+	        parent_id AS "parentId",
+	        parent_ids,
+	        name AS "orgName",
+	        area_id 	        
+        FROM 
+            gl.t_gl_org a join gl.t_gl_user_role_org b on a.id = b.org_id and b.user_id=#{userId}
+        where 1=1
+        <if test="useable != null and useable != ''">
+                AND a.useable = #{useable}
+        </if>     
+    </select>
+    
+    <select id="getAllOrgIdAboutUser" resultType="java.lang.String">
+		select org_id as orgId from gl.t_gl_user_role_org where user_id =  #{userId,jdbcType=VARCHAR}
+		union
+		select department_id  as orgId from gl.t_gl_user where id =  #{userId,jdbcType=VARCHAR}
+    </select>
+    
+    <select id="getAllOrgIdAboutOrg" resultType="java.lang.String" parameterType="java.util.Map">
+    	select id as orgId from gl.t_gl_org where id = #{orgId1,jdbcType=VARCHAR} or parent_ids like '%,'||#{orgId2,jdbcType=VARCHAR}||',%'
+    </select>
+  	<!--zmq 指定机构id查出所有的下属 -->
+	 <select id="getOrgByParentIds" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			id,parent_id,parent_ids,area_id,code,name,sort,type,grade,store_code,del_flag
+		FROM gl.t_gl_org a
+		WHERE a.del_flag = #{deleteFlag} 
+		AND a.parent_ids LIKE '%'|| #{parentIds}||'%' 
+		AND a.type=#{type}
+	</select>
+	<!--zmq 指定机构id查出所有的下属与得到的storeOrgId是否包含在内 -->
+	<select id="getOrgByParentIdsAndStoreOrgId" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			id,parent_id,parent_ids,area_id,code,name,sort,type,grade,store_code,del_flag
+		FROM gl.t_gl_org a
+		WHERE a.del_flag = #{deleteFlag} 
+		AND a.parent_ids LIKE '%'|| #{parentIds}||'%' 
+		AND a.type=#{type}
+		AND a.id=#{id}
+	</select>
+	
+	<!-- 根据省市区查询门店 -->
+	<select id="getOrgByTypeAndProvinceAndCityAndDistrict" resultType="com.creditharmony.core.users.entity.Org">
+		SELECT
+			id, parent_id as parentId, parent_ids as parentIds, code, province_id as provinceId 
+			,city_id as cityId, district_id as districtId
+		FROM gl.t_gl_org a
+		WHERE a.type=#{type}
+		AND a.province_id = #{provinceId}
+		AND a.del_flag = #{deleteFlag}
+		<if test="cityId != null and cityId != ''">
+			AND a.city_id = #{cityId}
+		</if>
+		<if test="districtId != null and districtId != ''">
+			AND a.district_id = #{districtId}
+		</if>
+	</select>
+</mapper>

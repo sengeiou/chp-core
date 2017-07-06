@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.autoBill.dao.PeriodBalanceDao">
+    
+	<select id="findList" resultType="com.creditharmony.core.autoBill.entity.PeriodBalanceInfo" parameterType="map">
+		select * from gl.t_gl_autobill_balance where bill_date between #{startDate} and #{endDate} order by bill_date
+	</select>
+	
+	<select id="get" resultType="com.creditharmony.core.autoBill.entity.PeriodBalanceInfo">
+		SELECT * from gl.t_gl_autobill_balance WHERE id = #{id}
+	</select>
+	
+	<select id="findByBillDate" resultType="com.creditharmony.core.autoBill.entity.PeriodBalanceInfo">
+		SELECT * from gl.t_gl_autobill_balance WHERE bill_date = #{billDate}
+	</select>
+	
+	<select id="findByDate" parameterType="com.creditharmony.core.autoBill.entity.PeriodBalanceInfo" resultType="com.creditharmony.core.autoBill.entity.PeriodBalanceInfo">
+		SELECT #{billDate}::text as "billDate", #{platformId}::text as "platformId",
+		(select balance_amount from gl.t_gl_autobill_bank where bill_date=#{billDate,jdbcType=VARCHAR} limit 1)::numeric AS "balance_amount",
+		(select sum(fail_amount)/100::numeric from gl.t_gl_pay_his_cf03 where platform_id=#{platformId} and last_requst_day=to_date(#{billDate},'yyyy-mm-dd') group by last_requst_day)::numeric AS "income_amount",
+		(select sum(amount)/100::numeric from gl.t_gl_pay_his_cf03 where platform_id=#{platformId} and last_requst_day=to_date(#{billDate},'yyyy-mm-dd') group by last_requst_day)::numeric AS "pay_amount"
+		from dual
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_autobill_balance(id, bill_date, platform_id, period_amount,balance_amount,recharge_amount,income_amount,pay_amount,final_amount,period_zj,final_zj,status)
+		VALUES(#{id}, #{billDate}, #{platformId}, #{periodAmount}, #{balanceAmount}, #{rechargeAmount}, #{incomeAmount},#{payAmount},#{finalAmount},#{periodZj},#{finalZj},#{status})
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_autobill_balance 
+		SET balance_amount = #{balanceAmount}
+		, income_amount = #{incomeAmount}
+		, pay_amount = #{payAmount}
+		, final_amount = #{finalAmount}
+		, period_zj = #{periodZj}
+		, final_zj = #{finalAmount}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateRechargeById">
+		UPDATE gl.t_gl_autobill_balance 
+		SET recharge_amount = #{rechargeAmount},
+		income_amount = #{incomeAmount}
+		WHERE bill_date = #{billDate}
+	</update>
+	
+	<delete id="deleteByDate">
+		DELETE FROM gl.t_gl_autobill_balance WHERE bill_date = #{billDate}
+	</delete>
+</mapper>

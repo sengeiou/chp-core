@@ -1,0 +1,179 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.cms.dao.QuestionAnswerDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.core.cms.entity.QuestionAnswer">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="question" jdbcType="VARCHAR" property="question" />
+    <result column="keyword" jdbcType="VARCHAR" property="keyword" />
+    <result column="answer" jdbcType="VARCHAR" property="answer" />
+    <result column="del_flag" jdbcType="VARCHAR" property="delFlag" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, question, keyword, answer,del_flag, create_by, create_time, modify_by, modify_time
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from gl.t_gl_question_answer
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from gl.t_gl_question_answer
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.core.cms.entity.QuestionAnswer">
+    insert into gl.t_gl_question_answer (id, question, keyword, 
+      answer,del_flag, create_by, create_time, 
+      modify_by, modify_time)
+    values (#{id,jdbcType=VARCHAR}, #{question,jdbcType=VARCHAR}, #{keyword,jdbcType=VARCHAR}, 
+      #{answer,jdbcType=VARCHAR},#{delFlag,jdbcType=VARCHAR}, #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, 
+      #{modifyBy,jdbcType=VARCHAR}, #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.core.cms.entity.QuestionAnswer">
+    insert into gl.t_gl_question_answer
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="question != null">
+        question,
+      </if>
+      <if test="keyword != null">
+        keyword,
+      </if>
+      <if test="answer != null">
+        answer,
+      </if>
+      <if test="delFlag != null">
+        del_flag,
+      </if>     
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="question != null">
+        #{question,jdbcType=VARCHAR},
+      </if>
+      <if test="keyword != null">
+        #{keyword,jdbcType=VARCHAR},
+      </if>
+      <if test="answer != null">
+        #{answer,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+       #{delFlag,jdbcType=VARCHAR},
+      </if>   
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.core.cms.entity.QuestionAnswer">
+    update gl.t_gl_question_answer
+    <set>
+      <if test="question != null">
+        question = #{question,jdbcType=VARCHAR},
+      </if>
+      <if test="keyword != null">
+        keyword = #{keyword,jdbcType=VARCHAR},
+      </if>
+      <if test="answer != null">
+        answer = #{answer,jdbcType=VARCHAR},
+      </if>
+      <if test="delFlag != null">
+       del_flag = #{delFlag,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.core.cms.entity.QuestionAnswer">
+    update gl.t_gl_question_answer
+    set question = #{question,jdbcType=VARCHAR},
+      keyword = #{keyword,jdbcType=VARCHAR},
+      answer = #{answer,jdbcType=VARCHAR},
+      del_flag = #{delFlag,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+	<select id="get" resultType="com.creditharmony.core.cms.entity.QuestionAnswer">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM gl.t_gl_question_answer
+		WHERE id = #{id}
+	</select>
+	<select id="findList" resultType="com.creditharmony.core.cms.entity.QuestionAnswer" parameterType="map">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM gl.t_gl_question_answer
+		<where>
+			<if test="delFlag != null and delFlag != ''">
+				AND del_flag = #{delFlag}
+			</if>
+			<if test="question != null and question != ''">
+				AND question LIKE '%'||#{question}||'%'
+			</if>
+			<if test="keyword != null and keyword != ''">
+				AND keyword LIKE '%'||#{keyword}||'%'
+			</if>
+			<if test="answer != null and answer != ''">
+				AND answer LIKE '%'||#{answer}||'%'
+			</if>
+		</where>
+		 order by modify_time desc 
+	</select>
+	
+	<select id="findListByIds" resultType="com.creditharmony.core.cms.entity.QuestionAnswer" parameterType="string">
+		SELECT 
+			<include refid="Base_Column_List"/>
+		FROM gl.t_gl_question_answer
+		where id in (${idsStr}) order by modify_time desc 
+	</select>
+	
+	<select id="findAllKeys" resultType="java.util.HashMap">
+	  SELECT 
+			id,keyword
+		FROM gl.t_gl_question_answer where del_flag ='0' order by modify_time desc 
+	</select>
+	
+</mapper>

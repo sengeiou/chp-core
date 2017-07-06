@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.log.dao.LoginLogDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.core.log.entity.LoginLog">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="login_name" jdbcType="VARCHAR" property="loginName" />
+    <result column="user_code" jdbcType="VARCHAR" property="userCode" />
+    <result column="user_name" jdbcType="VARCHAR" property="userName" />
+    <result column="login_time" jdbcType="TIMESTAMP" property="loginTime" />
+    <result column="login_ip" jdbcType="VARCHAR" property="loginIp" />
+    <result column="logout_time" jdbcType="TIMESTAMP" property="logoutTime" />
+    <result column="logout_ip" jdbcType="VARCHAR" property="logoutIp" />
+    <result column="type" jdbcType="CHAR" property="type" />
+    <result column="system_flag" jdbcType="VARCHAR" property="systemFlag" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    id, login_name, user_code, user_name, login_time, login_ip, logout_time, logout_ip, 
+    type, system_flag
+  </sql>
+  <select id="selectByPrimaryKey" parameterType="java.lang.String" resultMap="BaseResultMap">
+    select 
+    <include refid="Base_Column_List" />
+    from t_gl_login_log
+    where id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_gl_login_log
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.core.log.entity.LoginLog">
+    insert into t_gl_login_log (id, login_name, user_code, 
+      user_name, login_time, login_ip, 
+      logout_time, logout_ip, type, 
+      system_flag)
+    values (#{id,jdbcType=VARCHAR}, #{loginName,jdbcType=VARCHAR}, #{userCode,jdbcType=VARCHAR}, 
+      #{userName,jdbcType=VARCHAR}, #{loginTime,jdbcType=TIMESTAMP}, #{loginIp,jdbcType=VARCHAR}, 
+      #{logoutTime,jdbcType=TIMESTAMP}, #{logoutIp,jdbcType=VARCHAR}, #{type,jdbcType=CHAR}, 
+      #{systemFlag,jdbcType=VARCHAR})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.core.log.entity.LoginLog">
+    insert into t_gl_login_log
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="loginName != null">
+        login_name,
+      </if>
+      <if test="userCode != null">
+        user_code,
+      </if>
+      <if test="userName != null">
+        user_name,
+      </if>
+      <if test="loginTime != null">
+        login_time,
+      </if>
+      <if test="loginIp != null">
+        login_ip,
+      </if>
+      <if test="logoutTime != null">
+        logout_time,
+      </if>
+      <if test="logoutIp != null">
+        logout_ip,
+      </if>
+      <if test="type != null">
+        type,
+      </if>
+      <if test="systemFlag != null">
+        system_flag,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="loginName != null">
+        #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="userCode != null">
+        #{userCode,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginTime != null">
+        #{loginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="loginIp != null">
+        #{loginIp,jdbcType=VARCHAR},
+      </if>
+      <if test="logoutTime != null">
+        #{logoutTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="logoutIp != null">
+        #{logoutIp,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        #{type,jdbcType=CHAR},
+      </if>
+      <if test="systemFlag != null">
+        #{systemFlag,jdbcType=VARCHAR},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.core.log.entity.LoginLog">
+    update t_gl_login_log
+    <set>
+      <if test="loginName != null">
+        login_name = #{loginName,jdbcType=VARCHAR},
+      </if>
+      <if test="userCode != null">
+        user_code = #{userCode,jdbcType=VARCHAR},
+      </if>
+      <if test="userName != null">
+        user_name = #{userName,jdbcType=VARCHAR},
+      </if>
+      <if test="loginTime != null">
+        login_time = #{loginTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="loginIp != null">
+        login_ip = #{loginIp,jdbcType=VARCHAR},
+      </if>
+      <if test="logoutTime != null">
+        logout_time = #{logoutTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="logoutIp != null">
+        logout_ip = #{logoutIp,jdbcType=VARCHAR},
+      </if>
+      <if test="type != null">
+        type = #{type,jdbcType=CHAR},
+      </if>
+      <if test="systemFlag != null">
+        system_flag = #{systemFlag,jdbcType=VARCHAR},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.core.log.entity.LoginLog">
+    update t_gl_login_log
+    set login_name = #{loginName,jdbcType=VARCHAR},
+      user_code = #{userCode,jdbcType=VARCHAR},
+      user_name = #{userName,jdbcType=VARCHAR},
+      login_time = #{loginTime,jdbcType=TIMESTAMP},
+      login_ip = #{loginIp,jdbcType=VARCHAR},
+      logout_time = #{logoutTime,jdbcType=TIMESTAMP},
+      logout_ip = #{logoutIp,jdbcType=VARCHAR},
+      type = #{type,jdbcType=CHAR},
+      system_flag = #{systemFlag,jdbcType=VARCHAR}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+      <!-- 分页查询用户信息 -->
+	<select id="findList" resultType="com.creditharmony.core.log.entity.LoginLog">
+		SELECT
+			<include refid="Base_Column_List"/>
+		FROM gl.t_gl_login_log r
+		where 1=1 
+		 <if test="loginName != null">
+       and login_name= #{loginName,jdbcType=VARCHAR}
+      </if>
+      <if test="userCode != null">
+        and user_code=#{userCode,jdbcType=VARCHAR}
+      </if>
+      <if test="userName != null">
+        and user_name like CONCAT('%', #{userName,jdbcType=VARCHAR}, '%')
+      </if>
+      order by type,login_time desc
+	</select>
+</mapper>

@@ -1,0 +1,139 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.AreaDao">
+    
+	<sql id="areaColumns">
+		a.id,
+		a.parent_id AS "parent.id",
+		a.parent_ids,
+		a.code,
+		a.name,
+		a.sort,
+		a.type,
+		a.remarks,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		p.name AS "parent.name"
+	</sql>
+	
+	<sql id="areaJoins">
+		LEFT JOIN gl.t_gl_area p ON p.id = a.parent_id
+    </sql>
+    
+	<select id="get" resultType="com.creditharmony.core.users.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM gl.t_gl_area a
+		<include refid="areaJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findByParams" resultType="com.creditharmony.core.users.entity.Area" parameterType="java.util.Map">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM gl.t_gl_area a
+		<include refid="areaJoins"/>
+		WHERE 1=1
+		<if test="name != null and name !=''">
+			and a.name = #{name}
+		</if>
+		<if test="code != null and code !=''">
+			and a.code = #{code}
+		</if>
+		<if test="delFlag != null and delFlag !=''">
+			and a.del_flag = #{delFlag}
+		</if>
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.users.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM gl.t_gl_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		OR a.id = #{currentUser.department.area.id}
+		ORDER BY a.code
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM gl.t_gl_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.code
+	</select>
+	
+	<select id="findByParentIdsLike" resultType="com.creditharmony.core.users.entity.Area">
+		SELECT
+			<include refid="areaColumns"/>
+		FROM gl.t_gl_area a
+		<include refid="areaJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.parent_ids LIKE #{parentIds}
+		ORDER BY a.code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_area(
+			id, 
+			parent_id, 
+			parent_ids, 
+			code, 
+			name, 
+			sort,
+			type, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{parent.id}, 
+			#{parentIds}, 
+			#{code}, 
+			#{name}, 
+			#{sort}, 
+			#{type}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}, 
+			code = #{code}, 
+			name = #{name}, 
+			sort = #{sort}, 
+			type = #{type}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateParentIds">
+		UPDATE gl.t_gl_area SET 
+			parent_id = #{parent.id}, 
+			parent_ids = #{parentIds}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_area SET 
+			del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id} OR parent_ids LIKE CONCAT('%,', #{id}, ',%')
+	</update>
+	
+</mapper>

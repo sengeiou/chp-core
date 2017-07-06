@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.common.dao.CommonPlatformRuleDao">
+	<!-- 查询全部规则 -->
+	<select id="findAllList" resultType="com.creditharmony.core.common.entity.CommonPlatformRule">
+		select
+		id,
+		platform_id as dict_deduct_platform_id,
+		bank_id as dict_bank_id,
+		deduct_type as dict_deduct_interface_type,
+		single_limit_money as single_limit_money,
+		day_limit_money as day_limit_money
+		from gl.t_gl_platform_bank
+        where sys_id ='3' and  deduct_flag = '0'
+		order by platform_id
+	</select>
+</mapper>

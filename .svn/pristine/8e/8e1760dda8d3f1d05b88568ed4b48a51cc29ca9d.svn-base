@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.autoBill.dao.AutoBillTempDao">
+
+	<select id="get" resultType="com.creditharmony.core.autoBill.entity.AutoBillTemp">
+		SELECT * from gl.t_gl_autobill_temp WHERE order_no = #{orderNo}
+	</select>
+	
+	<insert id="insertBatch">
+		INSERT INTO gl.t_gl_autobill_temp(user_id, type, order_no, money, status, bill_time, batch_no, bank_info, account_info,account_no,account_name,bill_status,bank_time)
+		<foreach collection="list" item="item" separator=" union all ">
+			SELECT #{item.userId}, #{item.type}, #{item.orderNo}, #{item.money}, #{item.status}, to_timestamp(#{item.billTime},'YYYY-MM-DD HH24:MI:SS'), #{item.batchNo}, #{item.bankInfo}, #{item.accountInfo}, #{item.accountNo}, #{item.account_name}, #{item.billStatus}, to_timestamp(#{item.bankTime},'YYYY-MM-DD HH24:MI:SS')
+		</foreach>
+	</insert>
+	
+	<insert id="insertHisBatch">
+		INSERT INTO gl.t_gl_autobill_his(user_id, type, order_no, money, status, bill_time, batch_no, bank_info, account_info,account_no,account_name,bill_status,bank_time)
+		select user_id, type, order_no, money, status, bill_time, batch_no, bank_info, account_info,account_no,account_name,bill_status,bank_time from gl.t_gl_autobill_temp where order_no in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</insert>
+	
+	<delete id="deleteAll" parameterType="com.creditharmony.core.autoBill.entity.AutoBillTemp">
+		DELETE FROM gl.t_gl_autobill_temp
+	</delete>
+	
+	<delete id="deleteAutoBillTemp" parameterType="com.creditharmony.core.autoBill.entity.AutoBillTemp">
+		DELETE FROM gl.t_gl_autobill_temp WHERE user_id=#{userId} and type=#{type}
+	</delete>
+	
+	<delete id="delete">
+		DELETE FROM gl.t_gl_autobill_temp WHERE order_no=#{orderNo}
+	</delete>
+	
+	<delete id="deleteBatch" parameterType="java.util.List">
+		DELETE FROM gl.t_gl_autobill_temp  
+		WHERE order_no in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</delete>
+	
+	<update id="updateDeductHisStatus" parameterType="java.util.List">
+		<foreach collection="list" item="item"  separator=";">
+		UPDATE gl.t_gl_deduct_his_detail_${item.sysId} SET 
+			bill_status = #{item.status}
+		WHERE split_id=#{item.id};
+		</foreach>
+	</update>
+	
+	<update id="updateCollectHisStatus" parameterType="java.util.List">
+		<foreach collection="list" item="item"  separator=";" >
+		UPDATE gl.t_gl_deduct_his_detail_${item.sysId} SET 
+			collect_status = #{item.status}
+		WHERE settlement_no=#{item.id}
+		</foreach>
+	</update>
+	<update id="updatePayHisStatus">
+		UPDATE gl.t_gl_pay_his_cf03 SET 
+			bill_status =  #{billStatus}
+		WHERE item_no in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+	</update>
+</mapper>

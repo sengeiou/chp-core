@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.deduct.dao.DeductReqDao" >
+
+	<!-- 返回值定义 -->
+	<resultMap id="BaseResultMap" type="com.creditharmony.core.deduct.bean.in.DeductReq" >
+		<id column="sys_id" property="sysId" jdbcType="VARCHAR" />
+	    <id column="request_id" property="requestId" jdbcType="VARCHAR" />
+	    <result column="business_id" property="businessId" jdbcType="VARCHAR" />
+	    <result column="bat_id" property="batId" jdbcType="VARCHAR" />
+	    <result column="ref_id" property="refId" jdbcType="VARCHAR" />
+	    <result column="deduct_flag" property="deductFlag" jdbcType="VARCHAR" />
+	    <result column="rule" property="rule" jdbcType="VARCHAR" />
+	    <result column="bank_id" property="bankId" jdbcType="VARCHAR" />
+	    <result column="bank_prov" property="bankProv" jdbcType="VARCHAR" />
+	    <result column="bank_city" property="bankCity" jdbcType="VARCHAR" />
+	    <result column="bank_name" property="bankName" jdbcType="VARCHAR" />
+	    <result column="account_no" property="accountNo" jdbcType="VARCHAR" />
+	    <result column="account_name" property="accountName" jdbcType="VARCHAR" />
+	    <result column="id_type" property="idType" jdbcType="VARCHAR" />
+	    <result column="id_no" property="idNo" jdbcType="VARCHAR" />
+	    <result column="mobile" property="mobile" jdbcType="VARCHAR" />
+	    <result column="account_type" property="accountType" jdbcType="VARCHAR"/>
+	    <result column="amount" property="amount" jdbcType="NUMERIC" />
+	    <result column="unsplit_amount" property="unsplitAmount" jdbcType="BIGINT" />
+	    <result column="status" property="status" jdbcType="VARCHAR" />
+	    <result column="unsplit_times" property="unsplitTimes" jdbcType="INTEGER" />
+	    <result column="remarks" property="remarks" jdbcType="VARCHAR" />
+	    <result column="bill_date" property="billDate" jdbcType="DATE" />
+	    <result column="branch_code" property="branchCode" jdbcType="VARCHAR"/>
+	    <result column="bus_obj_type" property="busObjType" jdbcType="VARCHAR"/>
+	    <result column="protocol_no" property="protocolNo" jdbcType="VARCHAR"/>
+	</resultMap>
+  
+	<!-- 字段合集 -->
+	<sql id="Base_Column_List" >
+		sys_id,
+	    request_id,
+	    business_id,
+	   	bat_id,
+	    ref_id, 
+	    deduct_flag, 
+	    rule, 
+	    bank_id, 
+	    bank_prov, 
+	    bank_city, 
+	    bank_name, 
+	    account_no, 
+	    account_name, 
+	    id_type, 
+	    id_no, 
+	    mobile, 
+	    account_type, 
+	    amount,
+	    unsplit_amount,
+	    status,
+	    unsplit_times,
+	    remarks,
+	    bill_date,
+	    branch_code,
+	    bus_obj_type,
+	    protocol_no
+	</sql>
+  <!-- 插入数据 -->
+  <insert id="insert" parameterType="com.creditharmony.core.deduct.bean.in.DeductReq" >
+    insert into ${table} (
+    	<include refid="Base_Column_List" />
+    ) values (
+    	#{sysId},
+    	#{requestId}, 
+    	#{businessId},
+    	#{batId},
+    	#{refId},
+    	#{deductFlag}, 
+    	#{rule}, 
+      	#{bankId}, 
+      	#{bankProv}, 
+      	#{bankCity}, 
+      	#{bankName}, 
+      	#{accountNo}, 
+      	#{accountName}, 
+      	#{idType}, 
+      	#{idNo}, 
+      	#{mobile}, 
+      	#{accountType},
+      	#{amount},
+      	#{unsplitAmount},
+      	#{status},
+      	#{unsplitTimes},
+      	#{remarks},
+      	#{billDate},
+      	#{branchCode},
+      	#{busObjType},
+      	#{protocolNo}
+    )
+  </insert>
+  
+  <!-- 更新数据  -->
+  <update id="update" parameterType="java.lang.String">
+    update ${table} 
+    set status = #{status}
+    where request_id = #{requestId}
+  </update>
+  
+  <!-- 删除数据 -->
+  <delete id="delete" parameterType="java.lang.String">
+    delete from ${table} 
+    where request_id = #{requestId}
+  </delete>
+  <!-- 查看处理状态 -->
+  <select id="selectStatus" parameterType="java.lang.String" resultType="java.lang.String">
+    select status from ${table} where request_id = #{requestId}
+  </select>
+  <!-- 查询件数 -->
+  <select id="selectCount" parameterType="java.lang.String" resultType="java.lang.Integer">
+    select count(*) from ${table} where request_id = #{requestId}
+  </select>
+</mapper>

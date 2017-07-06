@@ -1,0 +1,286 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.creditharmony.core.common.dao.DataDomainDao">
+
+	<resultMap id="DataDomainMap" type="com.creditharmony.core.common.entity.DataDomain">
+        <id column="ID" property="id" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_ID" property="domainId" jdbcType="VARCHAR"/>
+        <result column="DOMAIN_TYPE" property="domainType" jdbcType="VARCHAR"/>
+        <result column="SOURCE_ID" property="sourceId" jdbcType="VARCHAR"/>
+        <result column="SOURCE_TYPE" property="sourceType" jdbcType="VARCHAR"/>
+        <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+		<result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+		<result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+		<result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+    </resultMap>
+    
+    <resultMap type="com.creditharmony.core.common.entity.ex.StoresGroupMemberEx" id="StoresGroupEx" extends="DataDomainMap">
+    	<result column="GROUPNAME" property="groupName"/>
+    	<result column="CREATORNAME" property="creatorName"/>
+    	<result column="ORGNAME" property="storeName"/>
+    </resultMap>
+	
+	<sql id="Base_Column_List">
+       ID, DOMAIN_ID, DOMAIN_TYPE, SOURCE_ID,SOURCE_TYPE
+    </sql>
+	
+	<select id="get" resultMap="DataDomainMap" >
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gl.t_gl_relationship_maintain
+        WHERE ID = #{id,jdbcType=VARCHAR}
+    </select>
+
+    <delete id="delete" parameterType="com.creditharmony.core.common.entity.DataDomain">
+        DELETE FROM gl.t_gl_relationship_maintain
+        <where>
+            <if test="domainId!=null">
+                and DOMAIN_ID=#{domainId}
+            </if>
+            <if test="domainType!=null">
+                and DOMAIN_TYPE=#{domainType}
+            </if>
+            <if test="sourceId!=null">
+                and SOURCE_ID=#{sourceId}
+            </if>
+            <if test="sourceType!=null">
+                and SOURCE_TYPE=#{sourceType}
+            </if>
+        </where>
+    </delete>
+     <delete id="deleteById" parameterType="String">
+        DELETE FROM gl.t_gl_relationship_maintain
+       	WHERE ID = #{id,jdbcType=VARCHAR}
+    </delete>
+    
+    <insert id="insert" parameterType="com.creditharmony.core.common.entity.DataDomain">
+		INSERT INTO gl.t_gl_relationship_maintain (
+			ID, 
+			DOMAIN_ID, 
+			DOMAIN_TYPE, 
+			SOURCE_ID, 
+			SOURCE_TYPE,
+			CREATE_BY, 
+			CREATE_TIME, 
+			MODIFY_BY, 
+			MODIFY_TIME
+		) VALUES (
+			#{id}, 
+			#{domainId},
+			#{domainType}, 
+			#{sourceId},
+			#{sourceType},
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}
+		)
+    </insert>
+    
+    <update id="update" parameterType="com.creditharmony.core.common.entity.DataDomain">
+	    UPDATE gl.t_gl_relationship_maintain
+	    SET DOMAIN_ID   = #{domainId,jdbcType=VARCHAR},
+	        DOMAIN_TYPE = #{domainType,jdbcType=VARCHAR},
+	        SOURCE_ID   = #{sourceId,jdbcType=VARCHAR},
+	        SOURCE_TYPE = #{sourceType,jdbcType=VARCHAR},
+	        MODIFY_BY = #{modifyBy}, 
+			MODIFY_TIME = #{modifyTime}
+	    WHERE ID = #{id,jdbcType=VARCHAR}
+    </update>
+    
+    <select id="getListByCondition" resultMap="DataDomainMap" parameterType="com.creditharmony.core.common.entity.DataDomain">
+        SELECT
+        <include refid="Base_Column_List"/>
+        FROM gl.t_gl_com_domain
+        <where>
+            <if test="domainId!=null">
+                AND DOMAIN_ID=#{domainId}
+            </if>
+            <if test="domainType!=null">
+                AND DOMAIN_TYPE=#{domainType}
+            </if>
+            <if test="sourceId!=null">
+                AND SOURCE_ID=#{sourceId}
+            </if>
+            <if test="sourceType!=null">
+                AND SOURCE_TYPE=#{sourceType}
+            </if>
+        </where>
+        ORDER BY DOMAIN_ID
+    </select>
+    <!-- 获取门店和小组的分派信息 -->
+    <select id="findStoresGroups" resultMap="StoresGroupEx" parameterType="com.creditharmony.core.common.entity.ex.DataDomainEx">
+    	SELECT rm.ID,rm.DOMAIN_ID,rm.SOURCE_ID,rm.create_by,o1.NAME GROUPNAME,u1.NAME CREATORNAME,o2.NAME ORGNAME
+    	FROM gl.t_gl_relationship_maintain rm
+    	INNER JOIN gl.t_gl_org o1
+    		ON rm.SOURCE_ID = o1.ID
+    	INNER JOIN gl.t_gl_user u1
+    		ON rm.CREATE_BY = u1.ID
+    	INNER JOIN gl.t_gl_org o2
+    		ON rm.DOMAIN_ID = o2.ID
+    	WHERE rm.DOMAIN_TYPE = 'org' and rm.SOURCE_TYPE = #{sourceType}
+    	<if test="domainId != null and domainId != ''">
+    		and rm.DOMAIN_ID = #{domainId}
+    	</if>
+    	<if test="sourceId != null and sourceId != ''">
+    		and rm.SOURCE_ID = #{sourceId}
+    	</if>
+    	<if test="assignTimeStart != null">
+    		and rm.create_time <![CDATA[ >=  ]]> #{assignTimeStart,jdbcType=TIMESTAMP}
+    	</if>
+    	<if test="assignTimeEnd != null">
+    		and rm.create_time <![CDATA[ < ]]> #{assignTimeEnd,jdbcType=TIMESTAMP}
+    	</if>
+    </select>
+    
+    <!-- 获取当前合同审核小组组员和门店的分派关系 -->
+    <select id="findStoresMembers" resultMap="StoresGroupEx" parameterType="java.util.Map">
+    	SELECT rm.ID,rm.DOMAIN_ID,rm.SOURCE_ID,rm.create_by,u1.NAME USERNAME,u2.NAME CREATORNAME,o2.NAME ORGNAME
+    	FROM gl.t_gl_relationship_maintain rm
+    	INNER JOIN gl.t_gl_user u1
+    		ON rm.SOURCE_ID = u1.ID
+    	INNER JOIN gl.t_gl_user u2
+    		ON rm.CREATE_BY = u2.ID
+    	INNER JOIN gl.t_gl_org o2
+    		ON rm.DOMAIN_ID = o2.ID
+    	WHERE rm.DOMAIN_TYPE = 'org' and rm.SOURCE_TYPE = #{dataDomain.sourceType}
+    	<if test="dataDomain.domainId != null and dataDomain.domainId != ''">
+    		and rm.DOMAIN_ID = #{dataDomain.domainId}
+    	</if>
+    	<if test="dataDomain.sourceId != null and dataDomain.sourceId != ''">
+    		and rm.SOURCE_ID = #{dataDomain.sourceId}
+    	</if>
+    	<if test="dataDomain.assignTimeStart != null">
+    		and rm.create_time <![CDATA[ >=  ]]> #{dataDomain.assignTimeStart,jdbcType=TIMESTAMP}
+    	</if>
+    	<if test="dataDomain.assignTimeEnd != null">
+    		and rm.create_time <![CDATA[ < ]]> #{dataDomain.assignTimeEnd,jdbcType=TIMESTAMP}
+    	</if>
+    	and rm.SOURCE_ID IN (
+	    	SELECT a.id
+			FROM gl.t_gl_user a
+			INNER JOIN gl.t_gl_org o on a.department_id = o.id
+			WHERE o.id = #{department.id}
+			AND   o.type = #{department.type}
+			AND a.del_flag = #{delFlag}
+		)
+    </select>
+    
+    <!-- 获取门店分派给的人 -->
+    <select id="getUserOfStoreOwer" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.common.entity.DataDomain">
+    	SELECT u1.ID,u1.LOGIN_NAME
+    	FROM gl.t_gl_relationship_maintain rm
+    	INNER JOIN gl.t_gl_user u1
+    		ON rm.SOURCE_ID = u1.ID
+    	WHERE rm.DOMAIN_TYPE = 'org' and rm.SOURCE_TYPE = #{sourceType}
+    	<if test="domainId != null and domainId != ''">
+    		and rm.DOMAIN_ID = #{domainId}
+    	</if>
+    </select>
+    
+    
+    <!-- 以下为UAT过程中用户提出门店分单方式改为2.0一致后的内容 -->
+    
+    <!-- 当前登陆人以某种角色身份出现的所有任职部门下的成员的某种门店分配类型的门店分配情况(成员姓名，登陆名，分配门店数量,所属小组) -->
+    <select id="getStoresAssignaList" parameterType="java.util.Map" resultType="com.creditharmony.core.common.entity.ex.StoreAssigned">
+    	select DISTINCT count(mo.source_id) as storeAssignedCount ,u2.id as memberId,u2.name as memberName,o."name" as groupName 
+    	from gl.t_gl_user_role_org uro
+		join gl.t_gl_user u on u.id = uro.user_id
+		join gl.t_gl_role r on r.id = uro.role_id
+		join gl.t_gl_user u2 on u2.department_id = uro.org_id
+		join gl.t_gl_org o on o.id = u2.department_id
+		left join (select m.source_id,m.source_type 
+		 		from gl.t_gl_relationship_maintain m 
+				join gl.t_gl_org o2 on o2.id = m.domain_id) mo on mo.source_id = u2.id and mo.source_type =  #{assignType,jdbcType=VARCHAR}
+		where u2.status='1' and u2.del_flag='0'
+		and uro.user_id = #{userId,jdbcType=VARCHAR}
+		<if test="roleType != null and roleType != ''">
+    		and r.role_type = #{roleType,jdbcType=VARCHAR} 
+    	</if>
+		<if test="roleTypeList != null and roleTypeList != ''">
+    		and r.role_type in
+        <foreach collection="roleTypeList" item="roleType" index="index"
+            open="(" close=")" separator=",">
+            #{roleType}
+        </foreach>
+        	and exists(select 1 from gl.t_gl_user_role_org uro1 where uro1.user_id=u2.id and uro1.role_id=#{userRoleId}) 
+    	</if>
+		group by u2.id,u2.name,o."name"
+    </select>
+    
+    <!-- 某种门店分配类型下已分配的门店数量 -->
+    <select id="getTotalCountOfStoreAssigned" parameterType="java.lang.String" resultType="java.lang.Integer">
+    	select count(m.domain_id) from gl.t_gl_relationship_maintain m
+    	join gl.t_gl_org o on o.id = m.domain_id
+    	where m.source_type = #{assignType,jdbcType=VARCHAR}
+    </select>
+    
+    <!-- 某种门店分配类型下某门店是否分配 -->
+    <select id="getCountTheStoreAssigned" parameterType="java.util.Map" resultType="java.lang.Integer">
+    	select count(m.domain_id) from gl.t_gl_relationship_maintain m
+    	join gl.t_gl_org o on o.id = m.domain_id
+    	where m.source_type = #{assignType,jdbcType=VARCHAR} and m.domain_id = #{storeId,jdbcType=VARCHAR}
+    </select>
+    
+    <!-- 某种门店分配类型下某個人已分配的门店数量 -->
+    <select id="getTotalCountOfStoreAssignedAboutPeople" parameterType="java.util.Map" resultType="java.lang.Integer">
+    	select count(m.domain_id) from gl.t_gl_relationship_maintain m
+    	join gl.t_gl_org o on o.id = m.domain_id
+    	 where m.source_type = #{assignType,jdbcType=VARCHAR} and m.source_id = #{memberId,jdbcType=VARCHAR}
+    </select>
+    
+    <!-- 某种门店分配类型下某個人已分配的门店 -->
+    <select id="getStoreAssignedAboutPeople" parameterType="java.util.Map" resultType="com.creditharmony.core.common.entity.ex.StoreAssigned">
+    	  select m.id as dataDomainId,o.name as storeName,m.create_time as assignTime from gl.t_gl_relationship_maintain m
+		  join gl.t_gl_org o on o.id = m.domain_id
+		  where m.source_type = #{assignType,jdbcType=VARCHAR} and m.source_id = #{memberId,jdbcType=VARCHAR}
+		  <if test="assignTimeStart != null">
+		  		and m.create_time <![CDATA[ >= ]]> #{assignTimeStart,jdbcType=TIMESTAMP}
+		  </if>
+		  <if test="assignTimeEnd != null">
+		  		and m.create_time <![CDATA[ < ]]> #{assignTimeEnd,jdbcType=TIMESTAMP}
+		  </if>
+		  <if test="storesName != null and storesName != ''">
+		  		and (
+		  		<foreach collection="storesName" item="item" separator=" or " >
+		  			 o.name like '%'||#{item}||'%'
+		  		</foreach>
+		  		)
+		  </if>
+    </select>
+    
+    <!-- 某种门店分配类型下尚可分配的门店数量 -->
+    <select id="getTotalCountOfStoreToAssign" parameterType="java.util.Map" resultType="java.lang.Integer">
+    	select count(*) from gl.t_gl_org o 
+    	where o.type  = #{orgType,jdbcType=VARCHAR} 
+    	  and o.id not in (
+				select domain_id 
+				from gl.t_gl_relationship_maintain 
+				where source_type = #{assignType,jdbcType=VARCHAR}
+		)
+    </select>
+    
+    <!-- 某种门店分配类型下尚可分配的门店 -->
+    <select id="getStoresToAssign" parameterType="java.util.Map" resultType="com.creditharmony.core.users.entity.Org">
+    	select * from gl.t_gl_org o 
+    	where o.type  = #{orgType,jdbcType=VARCHAR} 
+    	  and o.id not in (
+				select domain_id 
+				from gl.t_gl_relationship_maintain 
+				where source_type = #{assignType,jdbcType=VARCHAR}
+			)
+		  <if test="storeNames != null and storeNames != ''">
+		  	and ( 
+		  	<foreach item="item" index="index" collection="storeNames" separator=" or " >  
+		  		 o.name like '%'||#{item}||'%'
+		  	</foreach>
+		  	)
+		  </if>
+    </select>
+     
+        <select id="getTotalCountOfStoreAssignedByUser" parameterType="java.util.Map" resultType="java.lang.Integer">
+    	select count(m.domain_id) from gl.t_gl_relationship_maintain m
+    	join gl.t_gl_org o on o.id = m.domain_id
+    	 where m.source_id = #{memberId,jdbcType=VARCHAR} and source_type='rateApproveMember'
+    </select>
+</mapper>

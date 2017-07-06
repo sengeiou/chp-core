@@ -1,0 +1,198 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.cms.dao.CmsPushDao">
+  <resultMap id="BaseResultMap" type="com.creditharmony.core.cms.entity.CmsPush">
+    <id column="id" jdbcType="VARCHAR" property="id" />
+    <result column="article_id" jdbcType="VARCHAR" property="articleId" />
+    <result column="channel" jdbcType="VARCHAR" property="channel" />
+    <result column="user_id" jdbcType="VARCHAR" property="userId" />
+    <result column="push_time" jdbcType="TIMESTAMP" property="pushTime" />
+    <result column="url" jdbcType="VARCHAR" property="url" />
+    <result column="create_by" jdbcType="VARCHAR" property="createBy" />
+    <result column="create_time" jdbcType="TIMESTAMP" property="createTime" />
+    <result column="modify_by" jdbcType="VARCHAR" property="modifyBy" />
+    <result column="modify_time" jdbcType="TIMESTAMP" property="modifyTime" />
+  </resultMap>
+  <sql id="Base_Column_List">
+    cp.id, 
+    cp.article_id, 
+    cp.channel, 
+    cp.user_id, 
+    cp.push_time, 
+    cp.url, 
+    cp.create_by, 
+    cp.create_time, 
+    cp.modify_by, 
+    cp.modify_time,
+    ca.title,
+    ca.description as "content"
+  </sql>
+  <select id="selectByPrimaryKey" resultType="com.creditharmony.core.cms.entity.CmsPush">
+    select 
+    <include refid="Base_Column_List" />
+    from t_gl_cms_push cp,t_gl_cms_article ca
+    where cp.article_id=ca.id and cp.id = #{id,jdbcType=VARCHAR}
+  </select>
+  <delete id="deleteByPrimaryKey" parameterType="java.lang.String">
+    delete from t_gl_cms_push
+    where id = #{id,jdbcType=VARCHAR}
+  </delete>
+  <insert id="insert" parameterType="com.creditharmony.core.cms.entity.CmsPush">
+    insert into t_gl_cms_push (id, article_id, channel, 
+      user_id, push_time, url, 
+      create_by, create_time, modify_by, 
+      modify_time)
+    values (#{id,jdbcType=VARCHAR}, #{articleId,jdbcType=VARCHAR}, #{channel,jdbcType=VARCHAR}, 
+      #{userId,jdbcType=VARCHAR}, #{pushTime,jdbcType=TIMESTAMP}, #{url,jdbcType=VARCHAR}, 
+      #{createBy,jdbcType=VARCHAR}, #{createTime,jdbcType=TIMESTAMP}, #{modifyBy,jdbcType=VARCHAR}, 
+      #{modifyTime,jdbcType=TIMESTAMP})
+  </insert>
+  <insert id="insertSelective" parameterType="com.creditharmony.core.cms.entity.CmsPush">
+    insert into t_gl_cms_push
+    <trim prefix="(" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        id,
+      </if>
+      <if test="articleId != null">
+        article_id,
+      </if>
+      <if test="channel != null">
+        channel,
+      </if>
+      <if test="userId != null">
+        user_id,
+      </if>
+      <if test="pushTime != null">
+        push_time,
+      </if>
+      <if test="url != null">
+        url,
+      </if>
+      <if test="createBy != null">
+        create_by,
+      </if>
+      <if test="createTime != null">
+        create_time,
+      </if>
+      <if test="modifyBy != null">
+        modify_by,
+      </if>
+      <if test="modifyTime != null">
+        modify_time,
+      </if>
+    </trim>
+    <trim prefix="values (" suffix=")" suffixOverrides=",">
+      <if test="id != null">
+        #{id,jdbcType=VARCHAR},
+      </if>
+      <if test="articleId != null">
+        #{articleId,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="pushTime != null">
+        #{pushTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="url != null">
+        #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </trim>
+  </insert>
+  <update id="updateByPrimaryKeySelective" parameterType="com.creditharmony.core.cms.entity.CmsPush">
+    update t_gl_cms_push
+    <set>
+      <if test="articleId != null">
+        article_id = #{articleId,jdbcType=VARCHAR},
+      </if>
+      <if test="channel != null">
+        channel = #{channel,jdbcType=VARCHAR},
+      </if>
+      <if test="userId != null">
+        user_id = #{userId,jdbcType=VARCHAR},
+      </if>
+      <if test="pushTime != null">
+        push_time = #{pushTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="url != null">
+        url = #{url,jdbcType=VARCHAR},
+      </if>
+      <if test="createBy != null">
+        create_by = #{createBy,jdbcType=VARCHAR},
+      </if>
+      <if test="createTime != null">
+        create_time = #{createTime,jdbcType=TIMESTAMP},
+      </if>
+      <if test="modifyBy != null">
+        modify_by = #{modifyBy,jdbcType=VARCHAR},
+      </if>
+      <if test="modifyTime != null">
+        modify_time = #{modifyTime,jdbcType=TIMESTAMP},
+      </if>
+    </set>
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  <update id="updateByPrimaryKey" parameterType="com.creditharmony.core.cms.entity.CmsPush">
+    update t_gl_cms_push
+    set article_id = #{articleId,jdbcType=VARCHAR},
+      channel = #{channel,jdbcType=VARCHAR},
+      user_id = #{userId,jdbcType=VARCHAR},
+      push_time = #{pushTime,jdbcType=TIMESTAMP},
+      url = #{url,jdbcType=VARCHAR},
+      create_by = #{createBy,jdbcType=VARCHAR},
+      create_time = #{createTime,jdbcType=TIMESTAMP},
+      modify_by = #{modifyBy,jdbcType=VARCHAR},
+      modify_time = #{modifyTime,jdbcType=TIMESTAMP}
+    where id = #{id,jdbcType=VARCHAR}
+  </update>
+  
+  <insert id="insertBatch" parameterType="com.creditharmony.core.cms.entity.CmsPush">
+  	insert into t_gl_cms_push (id, article_id, channel, 
+     	user_id,  url, 
+      	create_by, create_time)
+    	select  getuuid32(), #{articleId,jdbcType=VARCHAR}, #{channel,jdbcType=VARCHAR}
+    	, a.uid,#{url,jdbcType=VARCHAR},#{createBy,jdbcType=VARCHAR},#{createTime,jdbcType=TIMESTAMP}
+     from (select DISTINCT u.id uid from gl.t_gl_user u
+left join gl.t_gl_user_role_org uro on uro.user_id=u.id
+left join gl.t_gl_role r on uro.role_id=r.id
+left join gl.t_gl_org o on uro.org_id=o.id
+left join gl.t_gl_dict d on d.id=r.org_type
+left join gl.t_gl_dict d1 on d1.id=d.parent_id
+where d1.label='汇金' and u.status='1' and u.del_flag='0'
+and r.del_flag='0' and r.useable='1'
+ <if test="parentIds != null and parentIds != ''">
+        and o.parent_ids like '${parentIds}%'
+ </if> ) a
+  </insert>
+   <select id="findAll" resultType="com.creditharmony.core.cms.entity.CmsPush">
+    select 
+    <include refid="Base_Column_List" />
+    from t_gl_cms_push cp,t_gl_cms_article ca
+    where cp.article_id=ca.id
+  </select>
+  
+  
+   <select id="findOverdueList" resultType="com.creditharmony.core.cms.entity.CmsPush">
+    select 
+    <include refid="Base_Column_List" />
+    from t_gl_cms_push cp,t_gl_cms_article ca
+    where cp.article_id=ca.id and
+    <![CDATA[cp.create_time+ interval '1 month'<now()]]>
+  </select>
+  
+</mapper>

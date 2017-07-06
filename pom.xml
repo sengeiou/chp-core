@@ -1,0 +1,128 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>com.creditharmony</groupId>
+    <artifactId>chp-parent-ext</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <relativePath>../chp-parent-ext/pom.xml</relativePath>
+  </parent>
+  <artifactId>chp-core</artifactId>
+  <name>chp-core</name>
+  <description>chp-core</description>
+  <packaging>jar</packaging>
+  
+  <properties>
+  
+		<chp-utils.version>0.0.1-SNAPSHOT</chp-utils.version>
+		<chp-ldap.version>0.0.1-SNAPSHOT</chp-ldap.version>
+		<chp-cache.version>0.0.1-SNAPSHOT</chp-cache.version>
+		
+  </properties>
+  
+  <dependencies>
+		<!-- creditharmony begin -->
+		
+		<dependency>
+			<groupId>com.creditharmony</groupId>
+			<artifactId>chp-utils</artifactId>
+			<version>${chp-utils.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.creditharmony</groupId>
+			<artifactId>chp-ldap</artifactId>
+			<version>${chp-ldap.version}</version>
+		</dependency>
+		
+		<dependency>
+			<groupId>com.creditharmony</groupId>
+			<artifactId>chp-cache</artifactId>
+			<version>${chp-cache.version}</version>
+		</dependency>
+		
+		<!-- creditharmony end -->
+		
+		<!-- spring-ldap begin -->
+		<dependency>
+		    <groupId>org.springframework.ldap</groupId>
+		    <artifactId>spring-ldap</artifactId>
+		    <version>1.3.1.RELEASE</version>
+		    <type>pom</type>
+		</dependency>
+		
+		<dependency>
+		    <groupId>org.springframework.ldap</groupId>
+		    <artifactId>spring-ldap-core-tiger</artifactId>
+		    <version>1.3.1.RELEASE</version>
+		</dependency>
+		<!-- spring-ldap end -->
+		
+		<!-- excel导入导出 start -->
+		<dependency>
+			<groupId>net.sf.jxls</groupId>
+			<artifactId>jxls-core</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		<dependency>
+			<groupId>net.sf.jxls</groupId>
+			<artifactId>jxls-reader</artifactId>
+			<version>1.0.5</version>
+		</dependency>
+		<dependency> 
+<groupId>org.springframework.data</groupId> 
+<artifactId>spring-data-redis</artifactId> 
+<version>1.6.1.RELEASE</version> 
+</dependency>
+		
+		<!-- excel导入导出 end -->
+  </dependencies>
+  
+  <build>
+		<plugins>
+			<!-- source attach plugin -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-source-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>attach-sources</id>
+						<goals>
+							<goal>jar</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>src/main/resources/mapper/**/*.xml</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- 打包测试用的jar包，classfier为tests -->
+			<plugin>
+				<artifactId>maven-jar-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>test-jar</goal>
+						</goals>
+						<configuration>
+							<includes>
+								<include>com/creditharmony/core/test/**/*.class</include>
+							</includes>
+							<excludes>
+								<exclude>com/creditharmony/core/test/**/*Test.class</exclude>
+							</excludes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<!-- enforcer, 规则统一定义在parent -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-enforcer-plugin</artifactId>
+			</plugin>
+		</plugins>
+	</build>
+</project>

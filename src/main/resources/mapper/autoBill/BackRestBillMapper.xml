@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.autoBill.dao.BackRestBillDao">
+	
+	<sql id="innerSelect">
+    	select case when c.bill_time is null then a.last_requst_day else c.bank_time end  as "bill_time",a.creat_time as "send_time",a.platform_id as "platform_type",a.sys_id AS "bill_type",
+		       a.business_id as "business_no",a.batch_no as "order_num",a.item_no,a.account_name as "custom_name",
+		       a.amount/100::numeric as "money",c.status as "platform_res",c.money as "balance_amount",a.bill_date,
+			   case when a.rtn_cd=#{billResultSuccessCode} then #{billResultSuccess} when a.rtn_cd is null then #{billResultProcessing} else #{billResultFailure} end as "balance_status",
+			   case when (a.rtn_cd=#{billResultSuccessCode} and c.status=#{platformresSuccess}) or (a.rtn_cd!=#{billResultSuccessCode} and a.rtn_cd is not null 
+		       and c.status=#{platformresFailure}) then #{billStatusSame} when a.rtn_cd is null then #{billStatusNone} else #{billStatusDifferent} end as "bill_status" 
+		from gl.t_gl_pay_his_cf03 a
+		left join gl.t_gl_autobill_temp c on a.item_no=c.order_no and c.type=#{autoBillType} where a.bill_status!=#{billStatusSame} or a.bill_status is null
+    </sql>
+    
+    <sql id="whereSql">
+    	1=1
+		<if test="startTime!=null and startTime!=''"> and to_char(a."bill_time",'YYYY-MM-DD') between #{startTime} and #{endTime} </if>
+		<if test="sendDate!=null and sendDate!=''"> and to_char(a."send_time",'YYYY-MM-DD')=#{sendDate} </if>
+		<if test="billType!=null and billType!=''"> and a."bill_type" like #{billType}||'%'</if>
+		<if test="platformType!=null and platformType!=''"> and a."platform_type" = #{platformType}</if>
+		<if test="customName!=null and customName!=''"> and a."custom_name" like '%'||#{customName}||'%'</if>
+		<if test="businessNo!=null and businessNo!=''"> and a."business_no" like '%'||#{businessNo}||'%'</if>
+		<if test="itemNo!=null and itemNo!=''"> and a.item_no like '%'||#{itemNo}||'%'</if>
+		<if test="platformRes!=null and platformRes!=''"> and a."platform_res" = #{platformRes}</if>
+		<if test="billStatus!=null and billStatus!=''"> and a."bill_status" = #{billStatus}</if>
+		<if test="itemList !=null and itemList.size > 0"> and a."item_no" in 
+			<foreach collection="itemList" item="item" open="(" separator="," close=")">
+			#{item}
+		    </foreach>
+        </if>
+     </sql>
+	
+	<select id="findBackRestBill" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+	   select * from (<include refid="innerSelect"/>) a
+		WHERE <include refid="whereSql"/>
+		order by a."bill_status" desc
+	</select>
+	
+	<!-- 检索已对账数据用 -->
+	<sql id="innerSelectBilled">
+    	select 
+    		case 
+    			when c.bill_time is null 
+    				then a.last_requst_day 
+    			else 
+    				c.bank_time 
+    		end  					 as "bill_time",
+    		a.creat_time 			 as "send_time",
+    		a.platform_id 			 as "platform_type",
+    		a.sys_id 				 as "bill_type",
+		    a.business_id 			 as "business_no",
+		    a.batch_no 				 as "order_num",
+		    a.item_no,a.account_name as "custom_name",
+		    a.amount/100::numeric 	 as "money",
+		    c.status 				 as "platform_res",
+		    c.money 				 as "balance_amount",
+			case 
+				when a.rtn_cd = #{billResultSuccessCode} 
+					then #{billResultSuccess} 
+				when a.rtn_cd is null 
+					then #{billResultProcessing} 
+				else 
+					#{billResultFailure} 
+			end 					 as "balance_status",
+			case 
+				when (a.rtn_cd = #{billResultSuccessCode} and c.status=#{platformresSuccess}) or 
+					 (a.rtn_cd != #{billResultSuccessCode} and a.rtn_cd is not null and c.status = #{platformresFailure}) 
+					then #{billStatusSame} 
+				when a.rtn_cd is null 
+					then #{billStatusNone} 
+				else #{billStatusDifferent} 
+			end 					 as "bill_status" 
+		from 
+			gl.t_gl_pay_his_cf03 a
+			left join gl.t_gl_autobill_his c 
+				on a.item_no = c.order_no 
+		where 
+			a.bill_status = #{billStatusSame} 
+    </sql>
+    
+    <!-- 检索已对账数据 -->
+   	<select id="findBackRestBilled" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+		select 
+	   		* 
+	   	from 
+	   		(<include refid="innerSelectBilled"/>) a
+		where 
+			<include refid="whereSql"/>
+		order by 
+			a."bill_status" desc
+	</select>
+	
+	<select id="findBackRestBillForTotalMoney" resultType="java.lang.Double" parameterType="map">
+		select sum(a."money") from (<include refid="innerSelect"/>) a
+		WHERE <include refid="whereSql"/>
+	</select>
+	
+	<select id="findBackRestBillForBatchNo" resultType="com.creditharmony.core.autoBill.entity.DeductHistory" parameterType="map">
+		select distinct a."order_num",a."send_time" from (<include refid="innerSelect"/>) a
+		WHERE a."order_num" is not null and a.item_no is not null and <include refid="whereSql"/>
+	</select>
+</mapper>

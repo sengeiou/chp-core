@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.loan.common.dao.CityInfoDao">
+	<sql id="cityColumns">
+		a.id,
+		a.area_name,
+		a.short_name,
+		a.area_code,
+		a.area_type,
+		a.parent_id
+	</sql>
+ 
+	<select id="findAreaName" parameterType="map" resultType="com.creditharmony.core.users.entity.ProvinceCity">
+		select
+		<include refid="cityColumns" />
+		from jk.t_gl_province_city_cmb a
+		where 1=1
+		and a.area_code = #{areaCode,jdbcType=VARCHAR}
+	</select>
+</mapper>

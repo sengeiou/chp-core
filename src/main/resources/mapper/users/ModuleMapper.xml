@@ -1,0 +1,136 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.ModuleDao">
+    
+	<sql id="moduleColumns">
+		a.id,
+		a.name,
+		a.short_name,
+		a.module_key,
+		a.remarks,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		a.url
+	</sql>
+	
+	<select id="get" resultType="com.creditharmony.core.users.entity.Module">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByKey" resultType="com.creditharmony.core.users.entity.Module">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		WHERE a.module_key = #{moduleKey} AND a.del_flag = #{delFlag}
+	</select>
+	
+	<select id="findList" resultType="com.creditharmony.core.users.entity.Module">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%'</if>
+		<if test="moduleKey!=null and moduleKey!=''"> and a.moduleKey like '%'||#{moduleKey}||'%'</if>
+		ORDER BY a.id
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.Module">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.id
+	</select>
+	
+	<select id="findModuleByRole" resultType="com.creditharmony.core.users.entity.Module" parameterType="java.util.Map">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		join gl.t_gl_role_module rm on rm.module_id = a.id and rm.role_id = #{roleId}
+		WHERE a.del_flag = #{delFlag}
+		ORDER BY a.id
+	</select>
+	<select id="findModuleByRoleIds" resultType="com.creditharmony.core.users.entity.Module" parameterType="java.util.List">
+		SELECT
+			distinct <include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		join gl.t_gl_role_module rm on rm.module_id = a.id
+		WHERE a.del_flag = #{delFlag} and  rm.role_id in
+		<foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		ORDER BY a.id
+	</select>
+	
+	<!-- 条件查询不在指定的moduleList集合中的Module -->
+    <select id="findByRole" resultType="com.creditharmony.core.users.entity.Module" parameterType="com.creditharmony.core.users.entity.Role">
+		SELECT
+			<include refid="moduleColumns"/>
+		FROM gl.t_gl_module a
+		JOIN gl.t_gl_role_module rm ON rm.module_id = a.id
+		WHERE 1=1
+		 <if test="id!=null and id!=''">
+		   AND rm.role_id = #{id,jdbcType=VARCHAR}
+		 </if>
+		 <if test="moduleList!=null">
+		   AND rm.module_id not in(
+			   	<foreach collection="moduleList" item="module" separator=" union all ">
+					SELECT #{module.id}
+				</foreach>
+			)
+		 </if>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_module(
+			id, 
+			name, 
+			short_name,
+			module_key,
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks,
+			url, 
+			del_flag
+		) VALUES (
+			#{id}, 
+			#{name}, 
+			#{shortName}, 
+			#{moduleKey}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{url}, 
+			#{delFlag}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_module SET  
+			name = #{name}, 
+			shortName = #{shortName}, 
+			module_key = #{moduleKey},
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			url = #{url},
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_module SET 
+		del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

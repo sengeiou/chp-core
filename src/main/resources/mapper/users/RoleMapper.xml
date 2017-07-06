@@ -1,0 +1,324 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.RoleDao">
+
+	<resultMap id="RoleMap" type="com.creditharmony.core.users.entity.Role">
+	  <id column="ID" property="id" jdbcType="VARCHAR" />
+	  <result column="NAME" property="name" jdbcType="VARCHAR" />
+	  <result column="ENNAME" property="enName" jdbcType="VARCHAR" />
+	  <result column="ROLE_TYPE" property="roleType" jdbcType="VARCHAR" />
+	  <result column="DATA_SCOPE" property="dataScope" jdbcType="VARCHAR" />
+	  <result column="USEABLE" property="useable" jdbcType="VARCHAR" />
+	  <result column="ORG_TYPE" property="orgType" jdbcType="VARCHAR" />
+	  <result column="CREATE_BY" property="createBy" jdbcType="VARCHAR" />
+	  <result column="CREATE_TIME" property="createTime" jdbcType="TIMESTAMP" />
+	  <result column="MODIFY_BY" property="modifyBy" jdbcType="VARCHAR" />
+	  <result column="MODIFY_TIME" property="modifyTime" jdbcType="TIMESTAMP" />
+	  <result column="DEL_FLAG" property="delFlag" jdbcType="VARCHAR" />
+    </resultMap>
+    
+    <sql id="Base_Column_List" >
+      ID, NAME, ENNAME, ROLE_TYPE, DATA_SCOPE, USEABLE, ORG_TYPE,
+      CREATE_BY, CREATE_TIME, MODIFY_BY, MODIFY_TIME, DEL_FLAG
+    </sql>
+    
+    <resultMap id="roleResult" type="com.creditharmony.core.users.entity.Role">
+		<id property="id" column="id" />
+		<result property="name" column="name" />
+		<result property="enName" column="enName" />
+		<result property="roleType" column="roleType" />
+		<result property="dataScope" column="dataScope" />
+		<result property="remarks" column="remarks" />
+		<result property="useable" column="useable" />
+		<result property="sysData" column="sysData" />
+		<result property="orgType" column="orgType" />
+		<result property="orgTypeName" column="orgTypeName" />
+		<result property="moduleIds" column="moduleIds" />
+		<result property="moduleStr" column="moduleStr" />
+		<collection property="moduleList" ofType="com.creditharmony.core.users.entity.Module">
+			<id property="id" column="moduleList.id" />
+			<id property="name" column="moduleList.name" />
+			<id property="shortName" column="moduleList.shortName" />
+		</collection>
+		<collection property="menuList" ofType="com.creditharmony.core.users.entity.Menu">
+			<id property="id" column="menuList.id" />
+		</collection>
+	</resultMap>
+	
+    <sql id="roleColumns">
+    	a.id,
+    	a.name,
+    	a.enName,
+    	a.role_type AS roleType,
+		a.data_scope AS dataScope,
+		a.remarks,
+		a.create_by AS "createBy",
+		a.create_time,
+		a.modify_by AS "modifyBy",
+		a.modify_time,
+		a.del_flag,
+    	a.useable AS useable,
+    	a.is_sys AS sysData,
+    	a.org_type AS orgType
+    </sql>
+    
+	<select id="get" resultMap="roleResult">
+		SELECT
+			<include refid="roleColumns"/>,
+			rmm.menu_id AS "menuList.id",
+			srm.module_id AS "moduleList.id",
+			sm.name AS "moduleList.name",
+			sm.short_name AS "moduleList.shortName",
+			d.label AS orgTypeName
+		FROM gl.t_gl_role a
+		LEFT JOIN gl.t_gl_role_module srm ON srm.role_id = a.id
+		LEFT JOIN gl.t_gl_module sm ON sm.id = srm.module_id
+		LEFT JOIN gl.t_gl_role_module_menu rmm ON rmm.role_id = a.id
+		LEFT JOIN gl.t_gl_dict d ON d.id = a.org_type and d.type='com_org_type'
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="getByName" resultType="com.creditharmony.core.users.entity.Role">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM gl.t_gl_role a
+		WHERE a.name = #{name} AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+	<select id="getByEnName" resultType="com.creditharmony.core.users.entity.Role">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM gl.t_gl_role a
+		WHERE a.enName = #{enName} AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+	<select id="findList" resultMap="roleResult">
+		SELECT <!-- DISTINCT -->
+			<include refid="roleColumns"/>,
+			rm.module_id AS "moduleList.id",
+			m.name AS "moduleList.name",
+			m.short_name AS "moduleList.shortName"
+		FROM gl.t_gl_role a
+		LEFT JOIN gl.t_gl_user_role_org ur ON ur.role_id = a.id
+		LEFT JOIN gl.t_gl_user u ON u.id = ur.user_id
+		LEFT JOIN gl.t_gl_role_module rm ON rm.role_id = a.id
+		LEFT JOIN gl.t_gl_module m ON m.id = rm.module_id
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL} AND a.useable=#{useable}
+		<if test="user != null and user.id != null and user.id != ''">
+			AND u.id = #{user.id}
+		</if>
+		<if test="orgType!=null and orgType!=''"> and a.org_type = #{orgType}</if>
+		<if test="user != null and user.loginName != null and user.loginName != ''">
+			AND u.login_name = #{user.loginName}
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name LIKE CONCAT('%',#{name},'%')
+		</if>
+		<!-- 数据范围过滤 -->
+		${sqlMap.dsf}
+		ORDER BY a.name
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.Role">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM gl.t_gl_role a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY a.name
+	</select>
+	
+	<select id="findByUserId" resultType="com.creditharmony.core.users.entity.Role" parameterType="java.util.Map">
+		SELECT
+			<include refid="roleColumns"/>
+		FROM gl.t_gl_role a
+		JOIN gl.t_gl_user_role_org ur ON ur.role_id = a.id
+		JOIN gl.t_gl_user u ON u.id = ur.user_id
+		WHERE 1=1
+		 <if test="userId!=null and userId!=''">
+		   AND ur.user_id = #{userId,jdbcType=VARCHAR}
+		 </if>
+		 <if test="orgId!=null and orgId!=''">
+		   AND ur.org_id = #{orgId,jdbcType=VARCHAR}
+		 </if>
+		 AND a.del_flag = #{deleteFlag}
+		ORDER BY a.id
+	</select>
+	
+	<!-- 条件查询角色,分页使用 -->
+	<select id="findByParams" resultMap="roleResult" parameterType="map">
+		SELECT <include refid="roleColumns"/>,
+			rm.module_id AS "moduleList.id",
+			m.name AS "moduleList.name",
+			m.short_name AS "moduleList.shortName"
+		FROM gl.t_gl_role a
+		LEFT JOIN gl.t_gl_role_module rm ON rm.role_id = a.id
+		LEFT JOIN gl.t_gl_module m ON m.id = rm.module_id
+		WHERE 1=1 
+		<if test="name!=null and name!=''"> and a.name = #{name}</if>
+		<if test="deleteFlag!=null and deleteFlag!=''"> and a.del_flag = #{deleteFlag}</if>
+		<if test="useable!=null and useable!=''"> and a.useable = #{useable}</if>
+		<if test="orgType!=null and orgType!=''"> and a.org_type = #{orgType}</if>
+		<if test="partyType!=null and partyType!=''"> and a.org_type in (select id from gl.t_gl_dict where type='com_org_type' and parent_id in (select id from gl.t_gl_dict where value=#{partyType} and type='com_party_type') )</if>
+		ORDER BY a.name
+	</select>
+	
+	<select id="findByParamsForPage" resultMap="roleResult" parameterType="map">
+		SELECT <include refid="roleColumns"/>,
+			(select string_agg(c.id,',') from gl.t_gl_role_module d  left join gl.t_gl_module c on c.id=d.module_id where d.role_id=a.id group by d.role_id) AS "moduleIds",
+            (select string_agg(c.name,',') from gl.t_gl_role_module d  left join gl.t_gl_module c on c.id=d.module_id where d.role_id=a.id group by d.role_id) AS "moduleStr"
+		FROM gl.t_gl_role a WHERE 1=1 
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%' </if>
+		<if test="deleteFlag!=null and deleteFlag!=''"> and a.del_flag = #{deleteFlag}</if>
+		<if test="useable!=null and useable!=''"> and a.useable = #{useable}</if>
+		<if test="orgType!=null and orgType!=''"> and a.org_type = #{orgType}</if>
+		<if test="partyType!=null and partyType!=''"> and a.org_type in (select id from gl.t_gl_dict where type='com_org_type' and parent_id in (select id from gl.t_gl_dict where value=#{partyType} and type='com_party_type') )</if>
+		ORDER BY a.name
+	</select>
+	
+	<!-- 查找数据权限 -->
+	<select id="findDataAuth" resultType="com.creditharmony.core.users.entity.RoleModuleMenu" parameterType="java.util.Map">
+		SELECT distinct a.role_id, a.module_id, a.menu_id, a.create_by, a.create_time, a.modify_by, a.modify_time, a.data_auth
+		FROM gl.t_gl_role_module_menu a 
+		WHERE a.role_id in (select uro.role_id from gl.t_gl_user_role_org uro where uro.user_id = #{userId} and uro.org_id = #{orgId})
+		<if test="menuId !=null and menuId !=''"> and a.menu_id = #{menuId} </if>
+	</select>
+	
+	<!-- 查找数据权限 -->
+	<select id="findRoleMenuByModuleId" resultType="map" parameterType="java.lang.String">
+		SELECT a.role_id roleid, a.menu_id menuid,b.name from gl.t_gl_role b left join
+		gl.t_gl_role_module_menu  a on (a.role_id=b.id)  
+		WHERE a.module_id = #{moduleId}
+		ORDER BY a.role_id
+	</select>
+	
+	<!-- 查找当前用户的系统权限 -->
+	<select id="findRoleModule" resultType="map" parameterType="java.util.List">
+		select distinct b.id,b.name from gl.t_gl_role_module a
+		left join gl.t_gl_module b on a.module_id=b.id
+		where a.role_id in 
+		 <foreach collection="list" item="roleid" index="index"
+            open="(" close=")" separator=",">
+            #{roleid}
+        </foreach>
+	</select>
+	
+	<select id="queryByParams" resultMap="RoleMap" parameterType="map">
+		SELECT 
+		   <include refid="Base_Column_List" />
+		FROM gl.t_gl_role 
+		WHERE 1=1
+		<if test="orgType!=null and orgType!=''">
+			AND org_Type = #{orgType}
+		</if>
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_role(
+			id, 
+			name, 
+			enName, 
+			role_type, 
+			data_scope, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			del_flag,
+			is_sys,
+			useable,
+			org_type
+		) VALUES (
+			#{id}, 
+			#{name}, 
+			#{enName}, 
+			#{roleType}, 
+			#{dataScope}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{delFlag},
+			#{sysData},
+			#{useable},
+			#{orgType}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_role SET 
+			name = #{name}, 
+			enName = #{enName}, 
+			role_type = #{roleType}, 
+			data_scope = #{dataScope}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			is_sys = #{sysData},
+			useable = #{useable},
+			org_type = #{orgType}
+		WHERE id = #{id}
+	</update>
+	
+	<delete id="deleteRoleModule">
+		DELETE FROM gl.t_gl_role_module WHERE role_id = #{id}
+	</delete>
+	
+	<insert id="insertRoleModule">
+		INSERT INTO gl.t_gl_role_module(role_id, module_id)
+		<foreach collection="moduleList" item="module" separator=" union all ">
+			SELECT #{id}, #{module.id}
+		</foreach>
+	</insert>
+	
+	<delete id="deleteRoleModuleMenu">
+		DELETE FROM gl.t_gl_role_module_menu WHERE role_id = #{id} and module_id = #{module.id}
+	</delete>
+	
+	<!-- 根据角色ID和模块集合删除roleModuleMenu -->
+	<delete id="removeRoleModuleMenu">
+		DELETE FROM gl.t_gl_role_module_menu WHERE role_id = #{id} 
+		and module_id in (
+			<foreach collection="moduleList" item="module" separator=" union all ">
+			SELECT #{module.id}
+			</foreach>)
+	</delete>
+	
+	<insert id="insertRoleModuleMenu">
+		INSERT INTO gl.t_gl_role_module_menu(role_id, module_id, menu_id, data_auth)
+		<foreach collection="menuList" item="menu" separator=" union all ">
+			SELECT #{id}, #{module.id}, #{menu.id}, #{menu.dataAuth}
+		</foreach>
+	</insert>
+	
+	<delete id="deleteRoleResourceAuth" parameterType="map">
+		DELETE FROM gl.t_gl_resource_auth WHERE role_id = #{roleId} and 
+		res_id in (select res.id from gl.t_gl_resource res where res.module_id=#{moduleId} and res.type = #{type})
+	</delete>
+	
+	<insert id="insertRoleResourceAuth">
+		INSERT INTO gl.t_gl_resource_auth(id,role_id,menu_id,res_id,has_display,has_edit,del_flag)
+		<foreach collection="resAuthList" item="resAuth" separator=" union all ">
+			SELECT #{resAuth.id},#{resAuth.roleId},#{resAuth.menuId},#{resAuth.resId},#{resAuth.hasDisplay},#{resAuth.hasEdit},#{resAuth.delFlag}
+		</foreach>
+	</insert>
+	
+	<delete id="deleteRoleMenu">
+		DELETE FROM gl.t_gl_role_menu WHERE role_id = #{id}
+	</delete>
+	
+	<insert id="insertRoleMenu">
+		INSERT INTO gl.t_gl_role_menu(role_id, menu_id)
+		<foreach collection="menuList" item="menu" separator=" union all ">
+			SELECT #{id}, #{menu.id}
+		</foreach>
+	</insert>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_role 
+		SET del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+</mapper>

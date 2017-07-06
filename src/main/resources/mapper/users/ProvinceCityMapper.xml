@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.ProvinceCityDao">
+    	
+	<sql id="cityColumns">
+		a.id,
+		a.area_code,
+		a.area_type,
+		a.area_name,
+		a.short_name,
+		a.parent_id
+	</sql>
+	
+	<select id="get" resultType="com.creditharmony.core.users.entity.ProvinceCity">
+		SELECT
+			<include refid="cityColumns"/>
+		FROM gl.t_gl_province_city a
+		WHERE a.id = #{id}
+	</select>
+	
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.ProvinceCity">
+		SELECT
+			<include refid="cityColumns"/>
+		FROM gl.t_gl_province_city a
+		WHERE 1=1
+		ORDER BY a.area_code
+	</select>
+	
+	<select id="findByParams" resultType="com.creditharmony.core.users.entity.ProvinceCity">
+		SELECT
+			<include refid="cityColumns"/>
+		FROM gl.t_gl_province_city a
+		WHERE 1=1
+		<if test="provinceId != null">
+			AND a.parent_id = #{provinceId}
+		</if>
+		<if test="parentId != null">
+			AND a.parent_id = #{parentId}
+		</if>
+		<if test="cityId != null">
+			AND a.parent_id = #{cityId}
+		</if>
+		ORDER BY a.area_code
+	</select>
+	
+	<insert id="insert">
+		INSERT INTO gl.t_gl_province_city(
+			id,
+			area_code,
+			area_type,
+			area_name,
+			short_name,
+			parent_id
+		) VALUES (
+			#{id}, 
+			#{areaCode}, 
+			#{areaType}, 
+			#{areaName}, 
+			#{shortName},
+			#{parentId}
+		)
+	</insert>
+	
+	<update id="update">
+		UPDATE gl.t_gl_province_city 
+		SET area_name = #{areaName}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="delete">
+		UPDATE gl.t_gl_province_city 
+		SET del_flag = #{DEL_FLAG_DELETE}
+		WHERE id = #{id}
+	</update>
+	
+    <!-- 检索省市区及下辖地区 -->
+    <select id="selCitySub" resultType="com.creditharmony.core.users.entity.ProvinceCity">
+        SELECT 
+            <include refid="cityColumns"/>             
+        FROM 
+            gl.t_gl_province_city 
+        <where>
+            <if test="id != null and id != ''">
+                (parent_id = #{id} OR id = #{id})
+            </if>     
+        </where>
+    </select>
+    
+</mapper>

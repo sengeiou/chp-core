@@ -1,0 +1,625 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.creditharmony.core.users.dao.UserDao">
+    
+	<sql id="userColumns2">
+    	a.id,
+    	a.department_id AS "department.id",
+    	a.login_name,
+    	a.password,
+    	a.user_code,
+		a.name,
+		a.email,
+		a.phone,
+		a.mobile,
+		a.user_type,
+		a.login_ip,
+		a.login_date,
+		a.remarks,
+		a.status,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		a.entry_time,
+		a.level,
+		a.has_login,
+		a.sex,
+		a.pospwd,
+		a.call_emp_code,
+		a.leader_id,
+		a.staff_flag,
+		a.system_flag,
+    	o.name AS "department.name",
+    	o.parent_id AS "department.parent.id",
+    	o.parent_ids AS "department.parentIds",
+    	o.party_type AS "department.partyType",
+    	o.type AS "department.type",
+    	a.start_time,
+    	a.end_time
+    </sql>
+    <sql id="userColumns">
+    	a.id,
+    	a.department_id AS "department.id",
+    	a.login_name,
+    	a.password,
+    	a.user_code,
+		a.name,
+		a.email,
+		a.phone,
+		a.mobile,
+		a.user_type,
+		a.login_ip,
+		a.login_date,
+		a.remarks,
+		a.status,
+		a.create_by,
+		a.create_time,
+		a.modify_by,
+		a.modify_time,
+		a.del_flag,
+		a.entry_time,
+		a.level,
+		a.has_login,
+		a.sex,
+		a.pospwd,
+		a.call_emp_code,
+		a.leader_id,
+		a.staff_flag,
+		a.system_flag,
+    	o.name AS "department.name",
+    	o.parent_id AS "department.parent.id",
+    	o.parent_ids AS "department.parentIds",
+    	o.party_type AS "department.partyType",
+    	o.type AS "department.type",
+    	oa.id AS "department.area.id",
+    	oa.name AS "department.area.name",
+    	oa.parent_id AS "department.area.parent.id",
+    	oa.parent_ids AS "department.area.parentIds",
+    	a.validate_code_time,
+    	a.start_time,
+    	a.end_time
+    </sql>
+    
+    <sql id="userJoins">
+		JOIN gl.t_gl_org o ON o.id = a.department_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id
+    </sql>
+	
+	<!-- 根据编号获得用户 -->
+	<select id="get" resultType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 上线后，为了对迁移过来的没有部门的用户数据进行修正，特添加此方法，仅供RecorrectUserController调用  -->
+	<select id="getUserById" resultType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		LEFT JOIN gl.t_gl_org o ON o.id = a.department_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id
+		WHERE a.id = #{id}
+	</select>
+	
+	<!-- 根据登录名查询用户 -->
+	<select id="getByLoginName" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		WHERE a.login_name = #{loginName} AND a.del_flag = #{DEL_FLAG_NORMAL}
+	</select>
+	
+	<!-- 获取审核小组成员 -->
+	<select id="getGroupMembers" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.Org">
+		select *
+		from gl.t_gl_user u
+		inner join gl.t_gl_org o
+		on o.id = u.department_id
+		where o.id = #{id} and u.del_flag= '0' and u.status = '1' and u.has_login = '1'
+	</select>
+	
+	<!-- 获取所有审核小组成员 -->
+	<select id="getAllGroupMembers" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.Org">
+		SELECT *
+		FROM gl.t_gl_user u
+		INNER JOIN gl.t_gl_org o
+		ON o.id = u.department_id
+		WHERE o.type = #{type} and u.del_flag= '0' and u.status = '1' and u.has_login = '1'
+	</select>
+	
+	<!-- 分页查询用户信息 -->
+	<select id="findList" resultType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		<if test="role != null and role.id != null and role.id != ''">
+			JOIN gl.t_gl_user_role_org ur ON ur.user_id = a.id AND ur.role_id = #{role.id}
+		</if>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		<if test="company != null and company.id != null and company.id != ''">
+			AND (o.id = #{company.id} OR o.parent_ids LIKE CONCAT('%,', #{company.id}, ',%'))
+		</if>
+		<if test="department != null and department.id != null and department.id != ''">
+			AND (o.id = #{department.id} OR o.parent_ids LIKE CONCAT('%,', #{department.id}, ',%'))
+		</if>
+		<!-- 如果不是超级管理员，则不显示超级管理员用户 -->
+		<if test="!currentUser.admin">
+			AND a.id != '1'
+		</if>
+		<if test="loginName != null and loginName != ''">
+			AND a.login_name like CONCAT('%', #{loginName}, '%')
+		</if>
+		<if test="name != null and name != ''">
+			AND a.name like CONCAT('%', #{name}, '%')
+		</if>
+		<choose>
+			<when test="page !=null and page.orderBy != null and page.orderBy != ''">
+				ORDER BY ${page.orderBy}
+			</when>
+			<otherwise>
+				ORDER BY o.code, a.name
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 根据orgId获取用户（树查询用户时用） -->
+	<select id="findUserByOrgId" resultType="com.creditharmony.core.users.entity.User" useCache="true">
+		SELECT
+			a.id, a.name, a.login_name
+		FROM gl.t_gl_user a
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+			AND a.department_id = #{department.id}
+		ORDER BY a.name
+	</select>
+	
+	<!-- 查询全部用户 -->
+	<select id="findAllList" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		WHERE a.del_flag = #{DEL_FLAG_NORMAL}
+		ORDER BY o.code, a.name
+	</select>
+	
+	<!-- 获取当前审核小组所有组员 -->
+	<select id="findContractGroupMember" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.User">
+		SELECT
+			<include refid="userColumns2"/>
+		FROM gl.t_gl_user a
+		INNER JOIN gl.t_gl_org o on a.department_id = o.id
+		WHERE o.id = #{department.id}
+		AND   o.type = #{department.type}
+		AND a.del_flag = #{delFlag}
+		AND a.status = #{status}
+	</select>
+	
+	<!-- 条件查询用户 -->
+	<select id="findByParams" resultType="com.creditharmony.core.users.entity.User" parameterType="map">
+		SELECT DISTINCT
+			<include refid="userColumns"/>,
+			(select string_agg(org.name||'-'||d.name,',') from gl.t_gl_user_role_org c left join gl.t_gl_role d on c.role_id=d.id left join gl.t_gl_org org on c.org_id=org.id where c.user_id=a.id group by c.user_id) AS "roleStr"
+		FROM gl.t_gl_user a
+		LEFT JOIN gl.t_gl_org o ON o.id = a.department_id 
+		LEFT JOIN gl.t_gl_user_role_org c1 on a.id = c1.user_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id 
+		WHERE 1=1 
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%' </if>
+		<if test="loginName!=null and loginName!=''"> and a.login_name like '%'||#{loginName}||'%'</if>
+		<if test="userCode!=null and userCode!=''"> and a.user_code = #{userCode}</if>
+		<if test="deleteFlag!=null and deleteFlag!=''"> and a.del_flag = #{deleteFlag}</if>
+		<if test="status!=null and status!=''"> and a.status = #{status}</if>
+		<if test="departmentId!=null and departmentId!=''"> and a.department_id = #{departmentId}</if>
+		<if test="parentIds!=null and parentIds!=''"> and o.parent_ids like #{parentIds}||'%'</if>
+		<if test="parentAll!=null and parentAll!=''"> and (a.department_id = #{departmentIdAll} or o.parent_ids like #{parentIdsAll}||'%')</if>
+		<if test="roleId!=null and roleId!=''"> and c1.role_id = #{roleId}</if>
+		<if test="parentId!=null and parentId!=''"> and o.parent_id = #{parentId}</if>
+		<choose>
+			<when test="orderBy != null and orderBy != ''">
+				ORDER BY ${orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id
+			</otherwise>
+		</choose>	
+	</select>
+	
+	
+		<!-- 条件查询用户 -->
+	<select id="findByParamsL" resultType="com.creditharmony.core.users.entity.User" parameterType="map">
+		SELECT DISTINCT
+			<include refid="userColumns"/>,
+			(select string_agg(org.name||'-'||d.name,',') from gl.t_gl_user_role_org c left join gl.t_gl_role d on c.role_id=d.id left join gl.t_gl_org org on c.org_id=org.id where c.user_id=a.id group by c.user_id) AS "roleStr"
+		FROM gl.t_gl_user a
+		LEFT JOIN gl.t_gl_org o ON o.id = a.department_id 
+		LEFT JOIN gl.t_gl_user_role_org c1 on a.id = c1.user_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id 
+		WHERE 1=1 
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%' </if>
+		<if test="loginName!=null and loginName!=''"> and a.login_name like '%'||#{loginName}||'%'</if>
+		<if test="userCode!=null and userCode!=''"> and a.user_code = #{userCode}</if>
+		<if test="deleteFlag!=null and deleteFlag!=''"> and a.del_flag = #{deleteFlag}</if>
+		<if test="status!=null and status!=''"> and a.status = #{status}</if>
+		<if test="departmentId!=null and departmentId!=''"> and (a.department_id = #{departmentId} or a.department_id='')</if>
+		<if test="parentIds!=null and parentIds!=''"> and o.parent_ids like #{parentIds}||'%'</if>
+		<if test="parentAll!=null and parentAll!=''"> and (a.department_id = #{departmentIdAll} or o.parent_ids like #{parentIdsAll}||'%'  or a.department_id='')</if>
+		<if test="roleId!=null and roleId!=''"> and c1.role_id = #{roleId}</if>
+		<choose>
+			<when test="orderBy != null and orderBy != ''">
+				ORDER BY ${orderBy}
+			</when>
+			<otherwise>
+				ORDER BY a.id
+			</otherwise>
+		</choose>	
+	</select>
+	
+	<!-- 条件查询用户 -->
+	<select id="findUserByUserCodeAndRoleAndOrg" resultType="com.creditharmony.core.users.entity.User" parameterType="map">
+		SELECT DISTINCT
+			<include refid="userColumns"/>,
+			(select string_agg(org.name||'-'||d.name,',') from gl.t_gl_user_role_org c left join gl.t_gl_role d on c.role_id=d.id left join gl.t_gl_org org on c.org_id=org.id where c.user_id=a.id group by c.user_id) AS "roleStr"
+		FROM gl.t_gl_user a
+		LEFT JOIN gl.t_gl_org o ON o.id = a.department_id 
+		LEFT JOIN gl.t_gl_user_role_org c1 on a.id = c1.user_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id 
+		WHERE a.user_code = #{userCode} and c1.role_id = #{roleId} and  c1.org_id = #{orgId} 
+	</select>
+	
+	<!-- 上线后，为了对迁移过来的没有部门的用户数据进行修正，特添加此方法，仅供RecorrectUserController调用 -->
+	<select id="findUserByParams" resultType="com.creditharmony.core.users.entity.User" parameterType="map">
+		SELECT DISTINCT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		LEFT JOIN gl.t_gl_org o ON o.id = a.department_id
+		LEFT JOIN gl.t_gl_area oa ON oa.id = o.area_id
+		WHERE 1=1 
+		<if test="name!=null and name!=''"> and a.name like '%'||#{name}||'%' </if>
+		<if test="loginName!=null and loginName!=''"> and a.login_name like '%'||#{loginName}||'%'</if>
+		<if test="userCode!=null and userCode!=''"> and a.user_code = #{userCode}</if>
+		<if test="deleteFlag!=null and deleteFlag!=''"> and a.del_flag = #{deleteFlag}</if>
+		<if test="status!=null and status!=''"> and a.status = #{status}</if>
+		<choose>
+			<otherwise>
+				ORDER BY a.id
+			</otherwise>
+		</choose>
+	</select>
+	
+	<!-- 查询全部用户数目 -->
+	<select id="findAllCount" resultType="long" parameterType="map">
+		SELECT COUNT(1)
+		FROM gl.t_gl_user a
+		WHERE a.del_flag = #{delFlag}
+	</select>
+	
+	<!-- 以User为条件查询用户 -->
+	<select id="findUsersByParams" resultType="com.creditharmony.core.users.entity.User" parameterType="com.creditharmony.core.users.entity.User">
+		select ID ,NAME
+		from  gl.t_gl_user
+		where 1=1
+		<if test="userType != null and userType != ''">and user_type = #{userType}</if>
+		<if test="delFlag != null and delFlag != ''">and del_flag = #{delFlag}</if>
+	</select>
+	
+	<!-- 插入用户 -->
+	<insert id="insert">
+		INSERT INTO gl.t_gl_user(
+			id, 
+			department_id, 
+			login_name, 
+			password, 
+			user_code, 
+			name, 
+			email, 
+			phone, 
+			mobile, 
+			user_type, 
+			create_by, 
+			create_time, 
+			modify_by, 
+			modify_time, 
+			remarks, 
+			status, 
+			del_flag,
+			sex,
+			level,
+			has_login,
+			entry_time,
+			pospwd,
+		    call_emp_code,
+		    leader_id,
+		    system_flag
+		) VALUES (
+			#{id}, 
+			#{department.id}, 
+			#{loginName}, 
+			#{password}, 
+			#{userCode}, 
+			#{name}, 
+			#{email}, 
+			#{phone}, 
+			#{mobile}, 
+			#{userType}, 
+			#{createBy}, 
+			#{createTime}, 
+			#{modifyBy}, 
+			#{modifyTime}, 
+			#{remarks}, 
+			#{status}, 
+			#{delFlag},
+			#{sex},
+			#{level},
+			#{hasLogin},
+			#{entryTime},
+			#{posPwd},
+			#{callEmpCode},
+			#{leaderId},
+			#{systemFlag}
+		)
+	</insert>
+	
+	<!-- 更新用户 -->
+	<update id="update">
+		UPDATE gl.t_gl_user 
+		SET department_id = #{department.id}, 
+			login_name = #{loginName}, 
+			password = #{password}, 
+			user_code = #{userCode}, 
+			name = #{name}, 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			user_type = #{userType}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks},
+			status = #{status},
+			sex = #{sex},
+			level = #{level},
+			has_login = #{hasLogin},
+			entry_time = #{entryTime},
+			call_emp_code = #{callEmpCode},
+			leader_id = #{leaderId},
+			del_flag = #{delFlag},
+			system_flag = #{systemFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 删除用户和角色关联表数据 -->
+	<delete id="deleteUserRoleOrg">
+		DELETE FROM gl.t_gl_user_role_org 
+		WHERE user_id = #{userId}
+		<if test="orgId != null and orgId != ''">
+		    and org_id = #{orgId}
+		</if>
+	</delete>
+	
+	<delete id="deleteUserByCodeOrName" parameterType="com.creditharmony.core.users.entity.User">
+		DELETE FROM gl.t_gl_user WHERE user_code=#{userCode} or login_name=#{loginName}
+	</delete>
+	
+	<!-- 插入用户和角色关联表数据 -->
+	<insert id="insertUserRoleOrg">
+		INSERT INTO gl.t_gl_user_role_org(user_id, org_id, role_id)
+		<foreach collection="userRoleOrgList" item="role" separator=" union all ">
+			SELECT #{role.userId}, #{role.orgId}, #{role.roleId}
+		</foreach>
+	</insert>
+	
+	<!-- 更新用户信息  -->
+	<update id="updateUserInfo">
+		UPDATE gl.t_gl_user SET 
+			email = #{email}, 
+			phone = #{phone}, 
+			mobile = #{mobile}, 
+			modify_by = #{modifyBy}, 
+			modify_time = #{modifyTime}, 
+			remarks = #{remarks}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新用户密码 -->
+	<update id="updatePasswordById">
+		UPDATE gl.t_gl_user 
+		SET password = #{password} 
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 更新登录信息，如登录IP、登录时间 -->
+	<update id="updateLoginInfo">
+		UPDATE gl.t_gl_user 
+		SET login_ip = #{loginIp}, 
+			login_Date = #{loginDate} 
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateDeleteFlag">
+		UPDATE gl.t_gl_user 
+		SET del_flag = #{delFlag}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateStatus">
+		UPDATE gl.t_gl_user 
+		SET status = #{status},
+		has_login = #{hasLogin}
+		WHERE id = #{id}
+	</update>
+	
+	<!-- 逻辑删除用户 -->
+	<update id="delete">
+		UPDATE gl.t_gl_user 
+		SET del_flag = #{DEL_FLAG_DELETE},
+		has_login = #{hasLogin}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateUserFrozen">
+		update gl.t_gl_user set status = #{status}
+        where del_flag = #{delFlag}
+        and status=#{whereStatus} and id in (select user_id from gl.t_gl_user_role_org a join gl.t_gl_org b on a.org_id=b.id where b.id=#{orgId} or b.parent_ids like #{parentIds}||'%')
+	</update>
+	
+	<select id="findUsersByCodes" resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		where 1=1 and a.user_code in 
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		<if test="delFlag != null and delFlag != ''">
+			and a.del_flag = #{delFlag}
+		</if>
+		<if test="staffFlag != null and staffFlag != ''">
+			and a.staff_flag = #{staffFlag}
+		</if>
+	</select>
+	
+	<select id="findUsersByLoginName" resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		where 1=1 
+		 and a.login_name in 
+        <foreach collection="list" item="item" open="(" separator="," close=")">
+			#{item}
+		</foreach>
+		<if test="delFlag != null and delFlag != ''">
+			and a.del_flag = #{delFlag}
+		</if>
+	</select>
+	
+	<select id="findLeaders" resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		where a.del_flag = #{delFlag} 
+		     and a.status = #{status}
+		<if test="orgId != null and orgId != ''">
+			and a.department_id = #{orgId}
+		</if>
+	</select>
+	
+	<select id="findUserTemporary" resultType="com.creditharmony.core.users.entity.User" parameterType="java.util.Map">
+		SELECT
+			<include refid="userColumns"/>
+		FROM gl.t_gl_user a
+		<include refid="userJoins"/>
+		where a.del_flag = #{delFlag} 
+		and a.end_time is not null and <![CDATA[a.end_time <#{limitDate}]]>
+	</select>
+	
+	<!--查询理财经理  -->
+	<select id="findManagerInfo" resultType="com.creditharmony.core.users.dto.ThreeNetUserDto" parameterType="java.util.Map">
+	    select 
+	        u.id as "id",
+	        u.user_code "userCode",
+	        u.status as "status",
+	        u.password as "password",
+	        u.login_name as "loginName",
+	        u.name as "name",
+	        u.sex as "sex",
+	        u.mobile as "mobile",
+	        u.email as "email",
+	        uro.org_id as "orgId",
+	        u.department_id as "departmentId",
+	        u.leader_id as "leaderId",
+	        u.create_time as "createTime",
+	        u.modify_time as "modifyTime"
+	    from gl.t_gl_user u 
+	    left join gl.t_gl_user_role_org uro on uro.user_id = u.id
+	    <where>
+	        u.user_code = #{userCode,jdbcType=VARCHAR}
+	        and uro.role_id = '6450000002'
+	    </where>
+	    order by (case when u.status='1' then '1' else '0' end) desc
+	    limit 1
+	</select>
+	
+	<!--  -->
+	<select id="findSendInfo" resultType="com.creditharmony.core.users.dto.ThreeNetUserDto" parameterType="java.util.Map">
+	    select
+	        u.id as "id",
+	        u.user_code "userCode",
+	        u.status as "status",
+	        u.password as "password",
+	        u.login_name as "loginName",
+	        u.name as "name",
+	        u.sex as "sex",
+	        u.mobile as "mobile",
+	        u.email as "email",
+	        uro.org_id as "orgId",
+	        uro.role_id as "roleType",
+	        u.department_id as "departmentId",
+	        u.leader_id as "leaderId",
+	        u.create_time as "createTime",
+	        u.modify_time as "modifyTime"
+	    from gl.t_gl_user u 
+	    left join gl.t_gl_user_role_org uro on uro.user_id = u.id
+	    left join gl.t_gl_org o on o.id = uro.org_id
+	    <where>
+	        u.user_code = #{userCode,jdbcType=VARCHAR}
+	        <if test="userId != null and userId != ''">
+				and u.id = #{userId}
+			</if>
+	    </where>
+	    order by  (case when status='1' then '1' else '0' end) desc,
+	              (case when o.name like '%管理及职能做单团队%'  then '0' else '1' end) desc,
+                  (case when uro.role_id = '6450000002' then '1' else '0' end) desc,
+                  (case when u.staff_flag = '1' then '1' else '0' end) desc
+         limit 1   
+	</select>
+	
+		<select id="findSendInfoById" resultType="com.creditharmony.core.users.dto.ThreeNetUserDto" parameterType="java.util.Map">
+	    select
+	        u.id as "id",
+	        u.user_code "userCode",
+	        u.status as "status",
+	        u.password as "password",
+	        u.login_name as "loginName",
+	        u.name as "name",
+	        u.sex as "sex",
+	        u.mobile as "mobile",
+	        u.email as "email",
+	        uro.org_id as "orgId",
+	        uro.role_id as "roleType",
+	        u.department_id as "departmentId",
+	        u.leader_id as "leaderId",
+	        u.create_time as "createTime",
+	        u.modify_time as "modifyTime"
+	    from gl.t_gl_user u 
+	    left join gl.t_gl_user_role_org uro on uro.user_id = u.id
+	    left join gl.t_gl_org o on o.id = uro.org_id
+	    <where>
+				u.id = #{userId}
+
+	    </where>
+         limit 1   
+	</select>
+	<update id="updateCodeByLoginName">
+		UPDATE gl.t_gl_user 
+		SET validate_code = #{validateCode},
+			validate_code_time=#{validateCodeTime}
+		WHERE id = #{id}
+	</update>
+	
+	<update id="updateUserTime">
+		UPDATE gl.t_gl_user 
+		SET start_time = #{startTime},
+			end_time=#{endTime}
+		WHERE id = #{userId}
+	</update>
+	
+</mapper>
